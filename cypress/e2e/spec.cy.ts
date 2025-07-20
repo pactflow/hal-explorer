@@ -40,7 +40,8 @@ describe('HAL Explorer App', () => {
   });
 
   it('should display HAL sections when rendering users resource',  () => {
-    cy.visit('/#uri=http://localhost:3000/movies.hal-forms.json');
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/movies.hal-forms.json');
+    cy.visit('/');
 
     cy.contains('JSON Properties');
     cy.contains('Links');
@@ -51,7 +52,8 @@ describe('HAL Explorer App', () => {
   });
 
   it('should display only Links section when rendering root api',  () => {
-    cy.visit('/#uri=http://localhost:3000/index.hal.json');
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
+    cy.visit('/');
 
     cy.get('JSON Properties').should('not.exist');
     cy.get('Embedded Resources').should('not.exist');
@@ -60,13 +62,15 @@ describe('HAL Explorer App', () => {
   });
 
   it('should display POST request dialog',  () => {
-    cy.visit('/#uri=http://localhost:3000/movies.hal-forms.json');
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/movies.hal-forms.json');
+    cy.visit('/');
     cy.get('button.icon-plus').eq(3).click();
     cy.contains('HTTP Request Input').should('be.visible');
   });
 
   it('should display user profile in POST request dialog',  () => {
-    cy.visit('/#uri=http://localhost:3000/index.hal.json');
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
+    cy.visit('/');
     cy.get('button.icon-plus').eq(0).click();
     cy.contains('Email').should('be.visible');
     cy.contains('Full name').should('be.visible');
@@ -74,7 +78,8 @@ describe('HAL Explorer App', () => {
   });
 
   it('should display expanded URI in HAL-FORMS GET request dialog',  () => {
-    cy.visit('/#uri=http://localhost:3000/filter.hal-forms.json');
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/filter.hal-forms.json');
+    cy.visit('/');
     cy.get('button.icon-left-open').last().click();
 
     cy.get('input[id="request-input-title"]').type('myTitle');
@@ -85,7 +90,8 @@ describe('HAL Explorer App', () => {
   });
 
   it('should display correct properties HAL-FORMS POST request dialog',  () => {
-    cy.visit('/#uri=http://localhost:3000/2posts1get.hal-forms.json');
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/2posts1get.hal-forms.json');
+    cy.visit('/');
     cy.get('button.icon-plus').last().click();
     cy.get('input[id="request-input-post2"]').type('xxx');
 
