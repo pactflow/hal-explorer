@@ -2287,9 +2287,9 @@
   integrity sha512-px7OMFO/ncXxixDe1zR13V1iycqWae0MxTaw62RpFlksUi5QuNWgQJFkTQjIOvrmutJbI7Fp2Y2N1F6D2R4G6w==
 
 "@types/jasmine@~5.1.7":
-  version "5.1.9"
-  resolved "https://registry.yarnpkg.com/@types/jasmine/-/jasmine-5.1.9.tgz#9f00abff2a17687e675ce6669e7b53c9e7d145f0"
-  integrity sha512-8t4HtkW4wxiPVedMpeZ63n3vlWxEIquo/zc1Tm8ElU+SqVV7+D3Na2PWaJUp179AzTragMWVwkMv7mvty0NfyQ==
+  version "5.1.13"
+  resolved "https://registry.yarnpkg.com/@types/jasmine/-/jasmine-5.1.13.tgz#c27d125ebac28d7d1c34b650fc593f96f89b088a"
+  integrity sha512-MYCcDkruFc92LeYZux5BC0dmqo2jk+M5UIZ4/oFnAPCXN9mCcQhLyj7F3/Za7rocVyt5YRr1MmqJqFlvQ9LVcg==
 
 "@types/jasminewd2@~2.0.13":
   version "2.0.13"
