@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
-
 export class RequestHeader {
-  constructor(public key: string, public value: string) {
-  }
+  constructor(
+    public key: string,
+    public value: string
+  ) {}
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AppService {
   private uriParam: string;
@@ -16,6 +17,7 @@ export class AppService {
   private layoutParam: string;
   private httpOptionsParam: boolean;
   private allHttpMethodsForLinksParam: boolean;
+  private scrollableDocumentationParam: boolean;
 
   private customRequestHeaders: RequestHeader[];
 
@@ -24,24 +26,24 @@ export class AppService {
   private layoutParamBackup: string;
   private httpOptionsParamBackup: boolean;
   private allHttpMethodsForLinksParamBackup: boolean;
+  private scrollableDocumentationParamBackup: boolean;
 
-  private uriSubject: Subject<string> = new Subject<string>();
-  private _uriObservable: Observable<string> = this.uriSubject.asObservable();
-
-  private themeSubject: Subject<string> = new Subject<string>();
-  private _themeObservable: Observable<string> = this.themeSubject.asObservable();
-
-  private layoutSubject: Subject<string> = new Subject<string>();
-  private _layoutObservable: Observable<string> = this.layoutSubject.asObservable();
-
-  private httpOptionsSubject: Subject<boolean> = new Subject<boolean>();
-  private _httpOptionsObservable: Observable<boolean> = this.httpOptionsSubject.asObservable();
-
-  private allHttpMethodsForLinksSubject: Subject<boolean> = new Subject<boolean>();
-  private _allHttpMethodsForLinksObservable: Observable<boolean> = this.allHttpMethodsForLinksSubject.asObservable();
-
-  private requestHeadersSubject: Subject<RequestHeader[]> = new Subject<RequestHeader[]>();
-  private _requestHeadersObservable: Observable<RequestHeader[]> = this.requestHeadersSubject.asObservable();
+  private readonly uriSubject: Subject<string> = new Subject<string>();
+  private readonly _uriObservable: Observable<string> = this.uriSubject.asObservable();
+  private readonly themeSubject: Subject<string> = new Subject<string>();
+  private readonly _themeObservable: Observable<string> = this.themeSubject.asObservable();
+  private readonly layoutSubject: Subject<string> = new Subject<string>();
+  private readonly _layoutObservable: Observable<string> = this.layoutSubject.asObservable();
+  private readonly httpOptionsSubject: Subject<boolean> = new Subject<boolean>();
+  private readonly _httpOptionsObservable: Observable<boolean> = this.httpOptionsSubject.asObservable();
+  private readonly allHttpMethodsForLinksSubject: Subject<boolean> = new Subject<boolean>();
+  private readonly _allHttpMethodsForLinksObservable: Observable<boolean> =
+    this.allHttpMethodsForLinksSubject.asObservable();
+  private readonly scrollableDocumentationSubject: Subject<boolean> = new Subject<boolean>();
+  private readonly _scrollableDocumentationObservable: Observable<boolean> =
+    this.scrollableDocumentationSubject.asObservable();
+  private readonly requestHeadersSubject: Subject<RequestHeader[]> = new Subject<RequestHeader[]>();
+  private readonly _requestHeadersObservable: Observable<RequestHeader[]> = this.requestHeadersSubject.asObservable();
 
   private reactOnLocationHashChange = true;
 
@@ -70,6 +72,10 @@ export class AppService {
     return this._allHttpMethodsForLinksObservable;
   }
 
+  get scrollableDocumentationObservable(): Observable<boolean> {
+    return this._scrollableDocumentationObservable;
+  }
+
   get requestHeadersObservable(): Observable<RequestHeader[]> {
     return this._requestHeadersObservable;
   }
@@ -80,9 +86,16 @@ export class AppService {
 
   setUri(uri: string, reactOnLocationHashChange = true) {
     this.reactOnLocationHashChange = reactOnLocationHashChange;
+    const previousUri = this.uriParam;
     this.uriParamBackup = this.uriParam;
     this.uriParam = uri;
     this.setLocationHash();
+
+    // Emit the URI change immediately if it changed, even when reactOnLocationHashChange is false
+    // This ensures the input field gets updated when clicking links
+    if (previousUri !== uri) {
+      this.uriSubject.next(this.uriParam);
+    }
   }
 
   getTheme(): string {
@@ -129,6 +142,16 @@ export class AppService {
     this.setLocationHash();
   }
 
+  getScrollableDocumentation(): boolean {
+    return this.scrollableDocumentationParam;
+  }
+
+  setScrollableDocumentation(scrollable: boolean) {
+    this.scrollableDocumentationParamBackup = this.scrollableDocumentationParam;
+    this.scrollableDocumentationParam = scrollable;
+    this.setLocationHash();
+  }
+
   getCustomRequestHeaders(): RequestHeader[] {
     return this.customRequestHeaders;
   }
@@ -164,6 +187,10 @@ export class AppService {
       this.allHttpMethodsForLinksParam = false;
     }
 
+    if (!this.scrollableDocumentationParam) {
+      this.scrollableDocumentationParam = false;
+    }
+
     const tempCustomRequestHeaders: RequestHeader[] = new Array(5);
 
     const fragment = location.hash.substring(1);
@@ -180,11 +207,15 @@ export class AppService {
         m = regex.exec(fragment);
       } else if (key === 'httpOptions') {
         const httpOptionsValue = decodeURIComponent(m[2]);
-        this.httpOptionsParam = (httpOptionsValue === 'true');
+        this.httpOptionsParam = httpOptionsValue === 'true';
         m = regex.exec(fragment);
       } else if (key === 'allHttpMethodsForLinks') {
         const allHttpMethodsForLinksValue = decodeURIComponent(m[2]);
-        this.allHttpMethodsForLinksParam = (allHttpMethodsForLinksValue === 'true');
+        this.allHttpMethodsForLinksParam = allHttpMethodsForLinksValue === 'true';
+        m = regex.exec(fragment);
+      } else if (key === 'scrollableDocumentation') {
+        const scrollableDocumentationValue = decodeURIComponent(m[2]);
+        this.scrollableDocumentationParam = scrollableDocumentationValue === 'true';
         m = regex.exec(fragment);
       } else if (key.startsWith('hkey')) {
         const headerKeyParam = decodeURIComponent(m[2]);
@@ -206,10 +237,12 @@ export class AppService {
           tempCustomRequestHeaders[headerValueIndex] = new RequestHeader(undefined, headerValueParam);
         }
         m = regex.exec(fragment);
-      } else if (key === 'url') { // keep this for backward compatibility
+      } else if (key === 'url') {
+        // keep this for backward compatibility
         this.uriParam = fragment.substring(fragment.indexOf('url=') + 4);
         m = null;
-      } else if (key === 'uri') { // uri ist the new parameter that replaced url
+      } else if (key === 'uri') {
+        // uri ist the new parameter that replaced url
         this.uriParam = fragment.substring(fragment.indexOf('uri=') + 4);
         m = null;
       } else {
@@ -236,6 +269,10 @@ export class AppService {
 
     if (this.allHttpMethodsForLinksParamBackup !== this.allHttpMethodsForLinksParam) {
       this.allHttpMethodsForLinksSubject.next(this.allHttpMethodsForLinksParam);
+    }
+
+    if (this.scrollableDocumentationParamBackup !== this.scrollableDocumentationParam) {
+      this.scrollableDocumentationSubject.next(this.scrollableDocumentationParam);
     }
 
     this.customRequestHeaders = [];
@@ -266,19 +303,33 @@ export class AppService {
       andPrefix = '&';
     }
 
-    if (this.httpOptionsParam != false) {
+    if (this.httpOptionsParam) {
       newLocationHash += andPrefix + 'httpOptions=' + this.httpOptionsParam;
       andPrefix = '&';
     }
 
-    if (this.allHttpMethodsForLinksParam != false) {
+    if (this.allHttpMethodsForLinksParam) {
       newLocationHash += andPrefix + 'allHttpMethodsForLinks=' + this.allHttpMethodsForLinksParam;
       andPrefix = '&';
     }
 
+    if (this.scrollableDocumentationParam) {
+      newLocationHash += andPrefix + 'scrollableDocumentation=' + this.scrollableDocumentationParam;
+      andPrefix = '&';
+    }
+
     for (let i = 0; i < this.customRequestHeaders.length; i++) {
-      newLocationHash += andPrefix + 'hkey' + i + '=' + this.customRequestHeaders[i].key +
-        '&' + 'hval' + i + '=' + this.customRequestHeaders[i].value;
+      newLocationHash +=
+        andPrefix +
+        'hkey' +
+        i +
+        '=' +
+        this.customRequestHeaders[i].key +
+        '&' +
+        'hval' +
+        i +
+        '=' +
+        this.customRequestHeaders[i].value;
       andPrefix = '&';
     }
 
@@ -286,7 +337,6 @@ export class AppService {
       newLocationHash += andPrefix + 'uri=' + this.uriParam;
     }
 
-    window.location.hash = newLocationHash;
+    globalThis.location.hash = newLocationHash;
   }
 }
-

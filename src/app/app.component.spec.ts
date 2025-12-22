@@ -15,16 +15,26 @@ describe('AppComponent', () => {
   let layoutSubject;
   let httpOptionsSubject;
   let allHttpMethodsForLinksSubject;
+  let scrollableDocumentationSubject;
 
   beforeEach(waitForAsync(() => {
-    const requestServiceMock = jasmine.createSpyObj(
-      ['getResponseObservable', 'getNeedInfoObservable', 'setCustomHeaders',
-        'getUri', 'getInputType', 'requestUri', 'computeHalFormsOptionsFromLink', 'getDocumentationObservable']);
+    const requestServiceMock = jasmine.createSpyObj([
+      'getResponseObservable',
+      'getNeedInfoObservable',
+      'getLoadingObservable',
+      'setCustomHeaders',
+      'getUri',
+      'getInputType',
+      'requestUri',
+      'computeHalFormsOptionsFromLink',
+      'getDocumentationObservable',
+    ]);
     const needInfoSubject = new Subject<string>();
     responseSubject = new Subject<string>();
     documentationSubject = new Subject<string>();
     requestServiceMock.getResponseObservable.and.returnValue(responseSubject);
     requestServiceMock.getNeedInfoObservable.and.returnValue(needInfoSubject);
+    requestServiceMock.getLoadingObservable.and.returnValue(new Subject<boolean>());
     requestServiceMock.getUri.and.returnValue('http://localhost/api');
     requestServiceMock.getInputType.and.returnValue('number');
     requestServiceMock.computeHalFormsOptionsFromLink.and.callFake(property => {
@@ -36,18 +46,36 @@ describe('AppComponent', () => {
     layoutSubject = new Subject<string>();
     httpOptionsSubject = new Subject<boolean>();
     allHttpMethodsForLinksSubject = new Subject<boolean>();
+    scrollableDocumentationSubject = new Subject<boolean>();
 
     const uriSubject = new Subject<string>();
     const requestHeaderSubject = new Subject<RequestHeader[]>();
     const appServiceMock = jasmine.createSpyObj(
-      ['getUri', 'getCustomRequestHeaders', 'setCustomRequestHeaders',
-        'getTheme', 'setTheme', 'getLayout', 'setLayout',
-        'getHttpOptions', 'setHttpOptions', 'getAllHttpMethodsForLinks', 'setAllHttpMethodsForLinks'],
+      [
+        'getUri',
+        'getCustomRequestHeaders',
+        'setCustomRequestHeaders',
+        'getTheme',
+        'setTheme',
+        'getLayout',
+        'setLayout',
+        'getHttpOptions',
+        'setHttpOptions',
+        'getAllHttpMethodsForLinks',
+        'setAllHttpMethodsForLinks',
+        'getScrollableDocumentation',
+        'setScrollableDocumentation',
+      ],
       {
-        themeObservable: themeSubject, layoutObservable: layoutSubject,
-        httpOptionsObservable: httpOptionsSubject, allHttpMethodsForLinksObservable: allHttpMethodsForLinksSubject,
-        uriObservable: uriSubject, requestHeadersObservable: requestHeaderSubject
-      });
+        themeObservable: themeSubject,
+        layoutObservable: layoutSubject,
+        httpOptionsObservable: httpOptionsSubject,
+        allHttpMethodsForLinksObservable: allHttpMethodsForLinksSubject,
+        scrollableDocumentationObservable: scrollableDocumentationSubject,
+        uriObservable: uriSubject,
+        requestHeadersObservable: requestHeaderSubject,
+      }
+    );
 
     appServiceMock.getUri.and.returnValue('http://localhost/api');
     appServiceMock.getCustomRequestHeaders.and.returnValue([]);
@@ -56,16 +84,17 @@ describe('AppComponent', () => {
     appServiceMock.getLayout.and.returnValue('2');
     appServiceMock.getHttpOptions.and.returnValue(false);
     appServiceMock.getAllHttpMethodsForLinks.and.returnValue(false);
+    appServiceMock.getScrollableDocumentation.and.returnValue(false);
     const domSanitizerMock = jasmine.createSpyObj(['bypassSecurityTrustResourceUrl']);
 
     TestBed.configureTestingModule({
       imports: [AppComponent],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
-        {provide: AppService, useValue: appServiceMock},
-        {provide: RequestService, useValue: requestServiceMock},
-        {provide: DomSanitizer, useValue: domSanitizerMock}
-      ]
+        { provide: AppService, useValue: appServiceMock },
+        { provide: RequestService, useValue: requestServiceMock },
+        { provide: DomSanitizer, useValue: domSanitizerMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);
@@ -125,7 +154,7 @@ describe('AppComponent', () => {
   });
 
   it('should select settings (HTTP OPTIONS)', () => {
-    component.selectSetting('Use HTTP OPTIONS')
+    component.selectSetting('Use HTTP OPTIONS');
 
     expect(component.useHttpOptions).toBeTrue();
   });
@@ -137,15 +166,68 @@ describe('AppComponent', () => {
   });
 
   it('should select settings (Link methods)', () => {
-    component.selectSetting('Enable all HTTP Methods for HAL-FORMS Links')
+    component.selectSetting('Enable all HTTP Methods for HAL-FORMS Links');
 
     expect(component.enableAllHttpMethodsForLinks).toBeTrue();
   });
 
   it('should select settings (Layout)', () => {
-    component.selectSetting('2 Column Layout')
+    component.selectSetting('2 Column Layout');
 
     expect(component.isTwoColumnLayout).toBeTrue();
   });
 
+  it('should react on scrollable documentation change', () => {
+    scrollableDocumentationSubject.next(true);
+
+    expect(component.scrollableDocumentation).toBeTrue();
+  });
+
+  it('should select settings (Scrollable Documentation)', () => {
+    component.selectSetting('Scrollable Documentation');
+
+    expect(component.scrollableDocumentation).toBeTrue();
+  });
+
+  it('should initialize color mode from localStorage', () => {
+    spyOn(localStorage, 'getItem').and.returnValue('dark');
+    component.initializeColorMode();
+
+    expect(component.activeColorMode).toBe('dark');
+  });
+
+  it('should initialize color mode to auto when not in localStorage', () => {
+    spyOn(localStorage, 'getItem').and.returnValue(null);
+    component.initializeColorMode();
+
+    expect(component.activeColorMode).toBe('auto');
+  });
+
+  it('should set color mode to light', () => {
+    spyOn(localStorage, 'setItem');
+    component.setColorMode('light');
+
+    expect(component.activeColorMode).toBe('light');
+    expect(localStorage.setItem).toHaveBeenCalledWith('colorMode', 'light');
+    expect(document.documentElement.getAttribute('data-bs-theme')).toBe('light');
+  });
+
+  it('should set color mode to dark', () => {
+    spyOn(localStorage, 'setItem');
+    component.setColorMode('dark');
+
+    expect(component.activeColorMode).toBe('dark');
+    expect(localStorage.setItem).toHaveBeenCalledWith('colorMode', 'dark');
+    expect(document.documentElement.getAttribute('data-bs-theme')).toBe('dark');
+  });
+
+  it('should set color mode to auto and detect system preference', () => {
+    spyOn(localStorage, 'setItem');
+    spyOn(window, 'matchMedia').and.returnValue({ matches: true } as MediaQueryList);
+    component.setColorMode('auto');
+
+    expect(component.activeColorMode).toBe('auto');
+    expect(localStorage.setItem).toHaveBeenCalledWith('colorMode', 'auto');
+    expect(document.documentElement.getAttribute('data-bs-theme')).toBe('dark');
+  });
 });

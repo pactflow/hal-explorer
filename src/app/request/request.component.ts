@@ -1,22 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import utpl from 'uri-templates';
 import { URITemplate } from 'uri-templates';
 import { AppService, RequestHeader } from '../app.service';
 import { Command, EventType, HttpRequestEvent, RequestService, UriTemplateParameter } from './request.service';
 import { RequestValidatorDirective } from './request-validator.directive';
-import { KeyValuePipe, NgFor, NgIf } from '@angular/common';
+import { KeyValuePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 export class DictionaryObject {
-  constructor(public prompt, public value) {
-  }
+  constructor(
+    public prompt,
+    public value
+  ) {}
 }
 
 @Component({
-    selector: 'app-uri-input',
-    templateUrl: './request.component.html',
-    styleUrls: ['./request.component.css'],
-    imports: [FormsModule, NgIf, NgFor, RequestValidatorDirective, KeyValuePipe]
+  selector: 'app-uri-input',
+  templateUrl: './request.component.html',
+  styleUrls: ['./request.component.css'],
+  imports: [FormsModule, RequestValidatorDirective, KeyValuePipe],
 })
 export class RequestComponent implements OnInit {
   uri: string;
@@ -37,11 +39,12 @@ export class RequestComponent implements OnInit {
   halFormsTemplate: any;
   halFormsPropertyKey: string;
   halFormsContentType: string;
+  isLoading = false;
 
   noValueSelected = '<No Value Selected>';
 
-  constructor(private appService: AppService, private requestService: RequestService) {
-  }
+  private readonly appService = inject(AppService);
+  private readonly requestService = inject(RequestService);
 
   ngOnInit() {
     this.jsonSchema = undefined;
@@ -49,6 +52,10 @@ export class RequestComponent implements OnInit {
     this.halFormsContentType = undefined;
     this.uri = this.appService.getUri();
     this.tempRequestHeaders = this.appService.getCustomRequestHeaders();
+
+    this.requestService.getLoadingObservable().subscribe(loading => {
+      this.isLoading = loading;
+    });
 
     this.requestService.getNeedInfoObservable().subscribe(async (value: any) => {
       if (value.type === EventType.FillHttpRequest) {
@@ -80,7 +87,7 @@ export class RequestComponent implements OnInit {
                   for (let i = 0; i < 10; i++) {
                     if (!options.inline) {
                       try {
-                        await new Promise((resolve) => setTimeout(resolve, 50));
+                        await new Promise(resolve => setTimeout(resolve, 50));
                       } catch {
                         // ignore
                       }
@@ -162,7 +169,26 @@ export class RequestComponent implements OnInit {
   }
 
   makeHttpRequest() {
-    this.requestService.requestUri(this.newRequestUri, Command[this.selectedHttpMethod], this.requestBody, this.halFormsContentType);
+    this.requestService.requestUri(
+      this.newRequestUri,
+      Command[this.selectedHttpMethod],
+      this.requestBody,
+      this.halFormsContentType
+    );
+  }
+
+  handleModalKeydown(event: KeyboardEvent, form: any) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      // Check if the form is valid before submitting
+      if (form && form.valid) {
+        // Click the Go button which will submit and close the modal
+        const goButton = document.getElementById('requestDialogGoButton');
+        if (goButton) {
+          goButton.click();
+        }
+      }
+    }
   }
 
   goFromHashChange(uri: string) {
@@ -204,8 +230,13 @@ export class RequestComponent implements OnInit {
           if (hasQueryParams) {
             this.requestBody += ',\n';
           }
-          this.requestBody += '  "' + key + '": ' + (this.jsonSchema[key].type !== 'integer' ? '"' : '')
-            + this.jsonSchema[key].value + (this.jsonSchema[key].type !== 'integer' ? '"' : '');
+          this.requestBody +=
+            '  "' +
+            key +
+            '": ' +
+            (this.jsonSchema[key].type !== 'integer' ? '"' : '') +
+            this.jsonSchema[key].value +
+            (this.jsonSchema[key].type !== 'integer' ? '"' : '');
           hasQueryParams = true;
         }
       }
@@ -218,10 +249,16 @@ export class RequestComponent implements OnInit {
         if (this.halFormsTemplate.value.method) {
           httpMethod = this.halFormsTemplate.value.method.toLowerCase();
         }
-        if (httpMethod !== 'get' && httpMethod !== 'post' && httpMethod !== 'put' && httpMethod !== 'patch' && httpMethod !== 'delete') {
+        if (
+          httpMethod !== 'get' &&
+          httpMethod !== 'post' &&
+          httpMethod !== 'put' &&
+          httpMethod !== 'patch' &&
+          httpMethod !== 'delete'
+        ) {
           httpMethod = 'get';
         }
-        const hasBody = (httpMethod === 'post' || httpMethod === 'put' || httpMethod === 'patch');
+        const hasBody = httpMethod === 'post' || httpMethod === 'put' || httpMethod === 'patch';
         const optionsAsArray = item?.options?.maxItems !== 1;
         if (item.name && item.value && item.value !== '<No Value Selected>') {
           if (hasQueryParams) {
@@ -243,7 +280,19 @@ export class RequestComponent implements OnInit {
               this.requestBody += '  "' + item.name + '": ' + '"' + item.value + '"';
             }
           } else {
-            this.newRequestUri += item.name + '=' + item.value;
+            // For GET requests with multiple values (array), repeat the parameter name
+            if (optionsAsArray && Array.isArray(item.value)) {
+              // Add each value as a separate query parameter with the same name
+              for (let i = 0; i < item.value.length; i++) {
+                if (i > 0) {
+                  this.newRequestUri += '&';
+                }
+                this.newRequestUri += item.name + '=' + encodeURIComponent(item.value[i]);
+              }
+            } else {
+              // Single value (not an array)
+              this.newRequestUri += item.name + '=' + encodeURIComponent(item.value);
+            }
           }
           hasQueryParams = true;
         }
@@ -314,19 +363,21 @@ export class RequestComponent implements OnInit {
     }
   }
 
-  getTooltip(key: string): string {
+  getTooltip(key: string | number | symbol): string {
+    const keyStr = String(key);
     if (!this.jsonSchema) {
       return '';
     }
-    let tooltip = this.jsonSchema[key].type;
-    if (this.jsonSchema[key].format) {
-      tooltip += ' in ' + this.jsonSchema[key].format + ' format';
+    let tooltip = this.jsonSchema[keyStr].type;
+    if (this.jsonSchema[keyStr].format) {
+      tooltip += ' in ' + this.jsonSchema[keyStr].format + ' format';
     }
     return tooltip;
   }
 
-  getInputType(key: string): string {
-    return this.requestService.getInputType(this.jsonSchema[key].type, this.jsonSchema[key].format);
+  getInputType(key: string | number | symbol): string {
+    const keyStr = String(key);
+    return this.requestService.getInputType(this.jsonSchema[keyStr].type, this.jsonSchema[keyStr].format);
   }
 
   getValidationErrors(ngModel: any): string {

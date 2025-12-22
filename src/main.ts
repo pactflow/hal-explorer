@@ -1,4 +1,4 @@
-import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { enableProdMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { environment } from './environments/environment';
 import { AppComponent } from './app/app.component';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -11,8 +11,8 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideZoneChangeDetection(),
     importProvidersFrom(BrowserModule, FormsModule),
-    provideHttpClient(withInterceptorsFromDi())
-  ]
-})
-  .catch(err => console.log(err));
+    provideHttpClient(withInterceptorsFromDi()),
+  ],
+}).catch(err => console.log(err));
