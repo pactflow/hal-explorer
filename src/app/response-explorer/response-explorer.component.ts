@@ -1,28 +1,44 @@
-import { Component, forwardRef, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, Input, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { Command, RequestService, Response } from '../request/request.service';
 import { JsonHighlighterService } from '../json-highlighter/json-highlighter.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AppService } from '../app.service';
-import { KeyValuePipe, NgFor, NgIf } from '@angular/common';
+import { KeyValuePipe } from '@angular/common';
 
 export class Link {
-  constructor(public rel: string, public href: string,
-              public title: string, public name: string,
-              public docUri?: string, public options?: string) {
-  }
+  constructor(
+    public rel: string,
+    public href: string,
+    public title: string,
+    public name: string,
+    public docUri?: string,
+    public options?: string
+  ) {}
 }
 
 class EmbeddedResource {
-  constructor(public name: string, public content: any, public isArray: boolean, public docUri?: string) {
-  }
+  constructor(
+    public name: string,
+    public content: any,
+    public isArray: boolean,
+    public docUri?: string
+  ) {}
+}
+
+export interface HalFormsTemplate {
+  title?: string;
+  method?: string;
+  target?: string;
+  contentType?: string;
+  properties?: any[];
 }
 
 @Component({
-    selector: 'app-response-explorer',
-    templateUrl: './response-explorer.component.html',
-    styleUrls: ['./response-explorer.component.css'],
-    encapsulation: ViewEncapsulation.None,
-    imports: [NgIf, NgFor, forwardRef(() => ResponseExplorerComponent), KeyValuePipe]
+  selector: 'app-response-explorer',
+  templateUrl: './response-explorer.component.html',
+  styleUrls: ['./response-explorer.component.css'],
+  encapsulation: ViewEncapsulation.None,
+  imports: [KeyValuePipe],
 })
 export class ResponseExplorerComponent implements OnInit {
   @Input() jsonRoot: any;
@@ -34,49 +50,77 @@ export class ResponseExplorerComponent implements OnInit {
   links: Link[];
   selfLink: Link;
   embedded: EmbeddedResource[];
-  templates: object;
+  templates: Record<string, HalFormsTemplate>;
 
   showProperties: boolean;
   showLinks: boolean;
   showEmbedded: boolean;
   hasHalFormsTemplates: boolean;
+  isLoading = false;
 
   command = Command;
   responseUrl;
 
   httpErrorResponse: HttpErrorResponse;
 
-  constructor(private requestService: RequestService,
-              private jsonHighlighterService: JsonHighlighterService,
-              private appService: AppService) {
-  }
+  private readonly requestService = inject(RequestService);
+  private readonly jsonHighlighterService = inject(JsonHighlighterService);
+  private readonly appService = inject(AppService);
 
   ngOnInit() {
+    this.requestService.getLoadingObservable().subscribe(loading => {
+      this.isLoading = loading;
+    });
+
     if (this.jsonRoot) {
       this.processJsonObject(this.jsonRoot);
     } else {
-      this.requestService.getResponseObservable()
-        .subscribe({
-          next: (response: Response) => {
-            const httpResponse = response.httpResponse;
-            this.httpErrorResponse = response.httpErrorResponse;
-            if (httpResponse) {
-              this.responseUrl = httpResponse.url;
-              this.isHalFormsMediaType = false;
-              const contentType = httpResponse.headers.get('content-type');
-              if ((contentType?.startsWith('application/prs.hal-forms+json') && httpResponse?.body?._templates)
-                || (this.responseUrl?.endsWith('.hal-forms.json') && httpResponse?.body?._templates)) {
-                this.isHalFormsMediaType = true;
-              }
-              if (!(typeof httpResponse.body === 'string' || httpResponse.body instanceof String)) {
-                this.processJsonObject(httpResponse.body);
-              } else {
-                this.processJsonObject({});
-              }
+      this.requestService.getResponseObservable().subscribe({
+        next: (response: Response) => {
+          const httpResponse = response.httpResponse;
+          this.httpErrorResponse = response.httpErrorResponse;
+
+          // Process successful response
+          if (httpResponse) {
+            this.responseUrl = httpResponse.url;
+            this.isHalFormsMediaType = false;
+            const contentType = httpResponse.headers.get('content-type');
+            if (
+              (contentType?.startsWith('application/prs.hal-forms+json') && httpResponse?.body?._templates) ||
+              (this.responseUrl?.endsWith('.hal-forms.json') && httpResponse?.body?._templates)
+            ) {
+              this.isHalFormsMediaType = true;
             }
-          },
-          error: error => console.error('Error during HTTP request: ' + JSON.stringify(error))
-        });
+            if (!(typeof httpResponse.body === 'string' || httpResponse.body instanceof String)) {
+              this.processJsonObject(httpResponse.body);
+            } else {
+              this.processJsonObject({});
+            }
+          }
+          // Process error response - it may still contain valid HAL-FORMS document with links and affordances
+          else if (this.httpErrorResponse) {
+            this.responseUrl = this.httpErrorResponse.url;
+            this.isHalFormsMediaType = false;
+            const contentType = this.httpErrorResponse.headers.get('content-type');
+            if (
+              (contentType?.startsWith('application/prs.hal-forms+json') &&
+                this.httpErrorResponse?.error?._templates) ||
+              (this.responseUrl?.endsWith('.hal-forms.json') && this.httpErrorResponse?.error?._templates)
+            ) {
+              this.isHalFormsMediaType = true;
+            }
+            if (
+              this.httpErrorResponse.error &&
+              !(typeof this.httpErrorResponse.error === 'string' || this.httpErrorResponse.error instanceof String)
+            ) {
+              this.processJsonObject(this.httpErrorResponse.error);
+            } else {
+              this.processJsonObject({});
+            }
+          }
+        },
+        error: error => console.error('Error during HTTP request: ' + JSON.stringify(error)),
+      });
     }
   }
 
@@ -101,8 +145,7 @@ export class ResponseExplorerComponent implements OnInit {
 
     if (Object.keys(jsonProperties).length > 0) {
       this.showProperties = true;
-      this.properties =
-        this.jsonHighlighterService.syntaxHighlight(JSON.stringify(jsonProperties, undefined, 2));
+      this.properties = this.jsonHighlighterService.syntaxHighlight(JSON.stringify(jsonProperties, undefined, 2));
     }
 
     const links = json._links;
@@ -113,25 +156,22 @@ export class ResponseExplorerComponent implements OnInit {
     }
     if (links) {
       this.showLinks = true;
-      Object.getOwnPropertyNames(links).forEach(
-        (val: string) => {
-          if (links[val] instanceof Array) {
-            links[val].forEach(
-              (entry: Link, i: number) => {
-                if (val === 'curies') {
-                  this.curieLinks.push(entry);
-                }
-                this.links.push(new Link(val + ' [' + i + ']', entry.href, entry.title, entry.name));
-              });
-          } else {
-            const link = new Link(val, links[val].href, links[val].title, links[val].name);
-            this.links.push(link);
-            if (val === 'self') {
-              this.selfLink = link;
+      Object.getOwnPropertyNames(links).forEach((val: string) => {
+        if (links[val] instanceof Array) {
+          links[val].forEach((entry: Link, i: number) => {
+            if (val === 'curies') {
+              this.curieLinks.push(entry);
             }
+            this.links.push(new Link(val + ' [' + i + ']', entry.href, entry.title, entry.name));
+          });
+        } else {
+          const link = new Link(val, links[val].href, links[val].title, links[val].name);
+          this.links.push(link);
+          if (val === 'self') {
+            this.selfLink = link;
           }
         }
-      );
+      });
 
       if (this.appService.getHttpOptions()) {
         this.links.forEach((link: Link) => {
@@ -161,11 +201,9 @@ export class ResponseExplorerComponent implements OnInit {
         }
       });
 
-      Object.getOwnPropertyNames(embedded).forEach(
-        (val: string) => {
-          this.embedded.push(new EmbeddedResource(val, embedded[val], embedded[val] instanceof Array, docUri));
-        }
-      );
+      Object.getOwnPropertyNames(embedded).forEach((val: string) => {
+        this.embedded.push(new EmbeddedResource(val, embedded[val], embedded[val] instanceof Array, docUri));
+      });
     }
 
     if (this.isHalFormsMediaType && json._templates) {
@@ -191,9 +229,11 @@ export class ResponseExplorerComponent implements OnInit {
       return '';
     }
 
-    if (!this.isHalFormsMediaType
-      || Command[command].toLowerCase() === 'get'
-      || this.appService.getAllHttpMethodsForLinks()) {
+    if (
+      !this.isHalFormsMediaType ||
+      Command[command].toLowerCase() === 'get' ||
+      this.appService.getAllHttpMethodsForLinks()
+    ) {
       return '';
     }
 
@@ -201,6 +241,11 @@ export class ResponseExplorerComponent implements OnInit {
   }
 
   isButtonDisabled(command: Command, link?: Link): boolean {
+    // Disable all buttons when a request is in progress
+    if (this.isLoading) {
+      return true;
+    }
+
     if (link && link.options) {
       if (link.options === 'http-options-error') {
         return false;
@@ -219,20 +264,19 @@ export class ResponseExplorerComponent implements OnInit {
     let target = href;
     if (this.isHalFormsMediaType) {
       if (this.templates) {
-        Object.getOwnPropertyNames(this.templates).forEach(
-          (val: string) => {
-            if (this.templates[val].method === Command[command].toLowerCase()) {
-              if (this.templates[val].target) {
-                target = this.templates[val].target;
-                return;
-              }
+        Object.getOwnPropertyNames(this.templates).forEach((val: string) => {
+          if (this.templates[val].method === Command[command].toLowerCase()) {
+            if (this.templates[val].target) {
+              target = this.templates[val].target;
+              return;
             }
           }
-        );
+        });
       }
     }
 
-    if (this.responseUrl) { // fixes #19
+    if (this.responseUrl) {
+      // fixes #19
       const absoluteURL = new URL(target, this.responseUrl).href;
       target = decodeURI(absoluteURL);
     }
@@ -243,18 +287,21 @@ export class ResponseExplorerComponent implements OnInit {
   getRequestButtonClass(command: Command) {
     const base = 'ms-1 btn btn-sm nav-button ';
     if (command === Command.Post) {
-      return base + 'btn-outline-info icon-plus';
+      return base + 'btn-outline-info';
     } else if (command === Command.Put) {
-      return base + 'btn-outline-warning icon-right-open';
+      return base + 'btn-outline-warning';
     } else if (command === Command.Patch) {
-      return base + 'btn-outline-warning icon-right-open';
+      return base + 'btn-outline-warning';
     } else if (command === Command.Delete) {
-      return base + 'btn-outline-danger icon-cancel';
+      return base + 'btn-outline-danger';
     }
-    return base + 'btn-outline-success icon-left-open';
+    return base + 'btn-outline-primary';
   }
 
-  getCommandForTemplateMethod(method: string): Command {
+  getCommandForTemplateMethod(method?: string): Command {
+    if (!method) {
+      return Command.Get;
+    }
     const command = Command[method[0].toUpperCase() + method.substring(1).toLowerCase()];
     if (command) {
       return command;
@@ -262,7 +309,7 @@ export class ResponseExplorerComponent implements OnInit {
     return Command.Get;
   }
 
-  getUrlForTemplateTarget(target: string): string {
+  getUrlForTemplateTarget(target?: string): string {
     if (target) {
       return target;
     } else if (this.selfLink) {

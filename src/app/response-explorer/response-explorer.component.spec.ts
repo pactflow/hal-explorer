@@ -7,63 +7,61 @@ import { JsonHighlighterService } from '../json-highlighter/json-highlighter.ser
 import { Subject } from 'rxjs';
 import { AppService } from '../app.service';
 
-
 const halFormsResponse = {
-  'title': 'The Shawshank Redemption',
-  'year': 1994,
-  '_links': {
-    'self': {
-      'href': 'http://localhost:4200/api/movies/1'
+  title: 'The Shawshank Redemption',
+  year: 1994,
+  _links: {
+    self: {
+      href: 'http://localhost:4200/api/movies/1',
     },
-    'movies': {
-      'href': 'http://localhost:4200/api/movies{?size,page}',
-      'templated': true
-    }
+    movies: {
+      href: 'http://localhost:4200/api/movies{?size,page}',
+      templated: true,
+    },
   },
-  '_templates': {
-    'default': {
-      'title': 'Ändere Film',
-      'method': 'put',
-      'contentType': '',
-      'properties': [
+  _templates: {
+    default: {
+      title: 'Ändere Film',
+      method: 'put',
+      contentType: '',
+      properties: [
         {
-          'name': 'title',
-          'prompt': 'Titel',
-          'required': true
+          name: 'title',
+          prompt: 'Titel',
+          required: true,
         },
         {
-          'name': 'year',
-          'prompt': 'Jahr',
-          'required': true
-        }
-      ]
+          name: 'year',
+          prompt: 'Jahr',
+          required: true,
+        },
+      ],
     },
-    'updateMoviePartially': {
-      'title': 'Ändere Film (partiell)',
-      'method': 'patch',
-      'contentType': '',
-      'properties': [
+    updateMoviePartially: {
+      title: 'Ändere Film (partiell)',
+      method: 'patch',
+      contentType: '',
+      properties: [
         {
-          'name': 'title',
-          'prompt': 'Titel',
-          'required': false
+          name: 'title',
+          prompt: 'Titel',
+          required: false,
         },
         {
-          'name': 'year',
-          'prompt': 'Jahr',
-          'required': false
-        }
-      ]
+          name: 'year',
+          prompt: 'Jahr',
+          required: false,
+        },
+      ],
     },
-    'deleteMovie': {
-      'title': 'Lösche Film',
-      'method': 'delete',
-      'contentType': '',
-      'properties': []
-    }
-  }
+    deleteMovie: {
+      title: 'Lösche Film',
+      method: 'delete',
+      contentType: '',
+      properties: [],
+    },
+  },
 };
-
 
 describe('ResponseExplorerComponent', () => {
   let component: ResponseExplorerComponent;
@@ -77,12 +75,14 @@ describe('ResponseExplorerComponent', () => {
     requestServiceMock = jasmine.createSpyObj([
       'getResponseObservable',
       'getDocumentationObservable',
+      'getLoadingObservable',
       'processCommand',
-      'getHttpOptions'
+      'getHttpOptions',
     ]);
     responseSubject = new Subject<Response>();
     spyOn(responseSubject, 'subscribe').and.callThrough();
     requestServiceMock.getResponseObservable.and.returnValue(responseSubject);
+    requestServiceMock.getLoadingObservable.and.returnValue(new Subject<boolean>());
 
     appServiceMock = jasmine.createSpyObj(['getHttpOptions', 'getAllHttpMethodsForLinks']);
     appServiceMock.getHttpOptions.and.returnValue(true);
@@ -91,12 +91,11 @@ describe('ResponseExplorerComponent', () => {
     TestBed.configureTestingModule({
       imports: [ResponseExplorerComponent],
       providers: [
-        {provide: RequestService, useValue: requestServiceMock},
-        {provide: JsonHighlighterService, useValue: jsonHighlighterServiceMock},
-        {provide: AppService, useValue: appServiceMock}
-      ]
-    })
-      .compileComponents();
+        { provide: RequestService, useValue: requestServiceMock },
+        { provide: JsonHighlighterService, useValue: jsonHighlighterServiceMock },
+        { provide: AppService, useValue: appServiceMock },
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -109,24 +108,24 @@ describe('ResponseExplorerComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should subscribe to request service\'s response observable', () => {
+  it("should subscribe to request service's response observable", () => {
     expect(responseSubject.subscribe).toHaveBeenCalled();
   });
 
   it('should syntax highlight json', () => {
-    responseSubject.next(new Response(new HttpResponse({body: {key: 'test'}}), null));
+    responseSubject.next(new Response(new HttpResponse({ body: { key: 'test' } }), null));
 
     expect(jsonHighlighterServiceMock.syntaxHighlight).toHaveBeenCalled();
   });
 
   it('should not syntax highlight json when response body has no properties', () => {
-    responseSubject.next(new HttpResponse({body: {}}));
+    responseSubject.next(new HttpResponse({ body: {} }));
 
     expect(jsonHighlighterServiceMock.syntaxHighlight).not.toHaveBeenCalled();
   });
 
   it('should parse empty response body', () => {
-    responseSubject.next(new HttpResponse({body: {}}));
+    responseSubject.next(new HttpResponse({ body: {} }));
 
     expect(component.showProperties).toBeFalsy();
     expect(component.showLinks).toBeFalsy();
@@ -134,34 +133,33 @@ describe('ResponseExplorerComponent', () => {
   });
 
   it('should parse HAL response body', () => {
-
     const halResponse = {
-      'text': 'hello all!',
-      'timeStamp': '2018-06-02T17:12:07.335Z',
-      '_links': {
-        'self': {
-          'href': 'https://chatty42.herokuapp.com/api/messages/1'
+      text: 'hello all!',
+      timeStamp: '2018-06-02T17:12:07.335Z',
+      _links: {
+        self: {
+          href: 'https://chatty42.herokuapp.com/api/messages/1',
         },
         'chatty:chatMessage': {
-          'href': 'https://chatty42.herokuapp.com/api/messages/1{?projection}',
-          'templated': true
+          href: 'https://chatty42.herokuapp.com/api/messages/1{?projection}',
+          templated: true,
         },
-        'curies': [
+        curies: [
           {
-            'href': 'https://chatty42.herokuapp.com/api/../docs/html5/{rel}.html',
-            'name': 'chatty',
-            'templated': true
-          }
-        ]
+            href: 'https://chatty42.herokuapp.com/api/../docs/html5/{rel}.html',
+            name: 'chatty',
+            templated: true,
+          },
+        ],
       },
-      '_embedded': {
+      _embedded: {
         'chatty:author': {
-          'name': 'John'
+          name: 'John',
         },
-      }
+      },
     };
 
-    responseSubject.next(new Response(new HttpResponse({body: halResponse}), null));
+    responseSubject.next(new Response(new HttpResponse({ body: halResponse }), null));
 
     expect(component.showProperties).toBeTruthy();
     expect(component.showLinks).toBeTruthy();
@@ -172,11 +170,10 @@ describe('ResponseExplorerComponent', () => {
   });
 
   it('should parse HAL-FORMS response body', () => {
-    const responseHeaders: HttpHeaders = new HttpHeaders(
-      {
-        'content-type': 'application/prs.hal-forms+json'
-      });
-    responseSubject.next(new Response(new HttpResponse({headers: responseHeaders, body: halFormsResponse}), null));
+    const responseHeaders: HttpHeaders = new HttpHeaders({
+      'content-type': 'application/prs.hal-forms+json',
+    });
+    responseSubject.next(new Response(new HttpResponse({ headers: responseHeaders, body: halFormsResponse }), null));
 
     expect(component.showProperties).toBeTruthy();
     expect(component.showLinks).toBeTruthy();
@@ -187,11 +184,10 @@ describe('ResponseExplorerComponent', () => {
   });
 
   it('should get HAL-FORMS link button class and state', () => {
-    const responseHeaders: HttpHeaders = new HttpHeaders(
-      {
-        'content-type': 'application/prs.hal-forms+json'
-      });
-    responseSubject.next(new Response(new HttpResponse({headers: responseHeaders, body: halFormsResponse}), null));
+    const responseHeaders: HttpHeaders = new HttpHeaders({
+      'content-type': 'application/prs.hal-forms+json',
+    });
+    responseSubject.next(new Response(new HttpResponse({ headers: responseHeaders, body: halFormsResponse }), null));
 
     expect(component.getLinkButtonClass(Command.Get)).toBe('');
     expect(component.isButtonDisabled(Command.Get)).toBeFalse();
@@ -220,29 +216,60 @@ describe('ResponseExplorerComponent', () => {
     expect(component.getLinkButtonClass(Command.Get, link)).toBe('');
   });
 
-  it('should get HAL-FORMS request button class and state', () => {
-    const responseHeaders: HttpHeaders = new HttpHeaders(
-      {
-        'content-type': 'application/prs.hal-forms+json'
-      });
-    responseSubject.next(new Response(new HttpResponse({headers: responseHeaders, body: halFormsResponse}), null));
+  it('should disable all buttons when loading', () => {
+    const loadingSubject = new Subject<boolean>();
+    requestServiceMock.getLoadingObservable.and.returnValue(loadingSubject);
 
-    expect(component.getRequestButtonClass(Command.Get)).toBe('ms-1 btn btn-sm nav-button btn-outline-success icon-left-open');
-    expect(component.getRequestButtonClass(Command.Post)).toBe('ms-1 btn btn-sm nav-button btn-outline-info icon-plus');
-    expect(component.getRequestButtonClass(Command.Put)).toBe('ms-1 btn btn-sm nav-button btn-outline-warning icon-right-open');
-    expect(component.getRequestButtonClass(Command.Patch)).toBe('ms-1 btn btn-sm nav-button btn-outline-warning icon-right-open');
-    expect(component.getRequestButtonClass(Command.Delete)).toBe('ms-1 btn btn-sm nav-button btn-outline-danger icon-cancel');
-    expect(component.getRequestButtonClass(undefined)).toBe('ms-1 btn btn-sm nav-button btn-outline-success icon-left-open');
+    // Create new component to trigger ngOnInit with new loading observable
+    const newFixture = TestBed.createComponent(ResponseExplorerComponent);
+    const newComponent = newFixture.componentInstance;
+    newFixture.detectChanges();
+
+    // Initially not loading
+    expect(newComponent.isButtonDisabled(Command.Get)).toBeFalse();
+
+    // Set loading to true
+    loadingSubject.next(true);
+
+    // All buttons should be disabled when loading
+    expect(newComponent.isButtonDisabled(Command.Get)).toBeTrue();
+    expect(newComponent.isButtonDisabled(Command.Post)).toBeTrue();
+    expect(newComponent.isButtonDisabled(Command.Put)).toBeTrue();
+    expect(newComponent.isButtonDisabled(Command.Patch)).toBeTrue();
+    expect(newComponent.isButtonDisabled(Command.Delete)).toBeTrue();
+
+    // With link
+    const link = new Link('rel', 'href', 'title', 'name', 'docUri', 'GET');
+    expect(newComponent.isButtonDisabled(Command.Get, link)).toBeTrue();
+
+    // Set loading to false
+    loadingSubject.next(false);
+
+    // Buttons should be enabled again based on normal rules
+    expect(newComponent.isButtonDisabled(Command.Get)).toBeFalse();
+  });
+
+  it('should get HAL-FORMS request button class and state', () => {
+    const responseHeaders: HttpHeaders = new HttpHeaders({
+      'content-type': 'application/prs.hal-forms+json',
+    });
+    responseSubject.next(new Response(new HttpResponse({ headers: responseHeaders, body: halFormsResponse }), null));
+
+    expect(component.getRequestButtonClass(Command.Get)).toBe('ms-1 btn btn-sm nav-button btn-outline-primary');
+    expect(component.getRequestButtonClass(Command.Post)).toBe('ms-1 btn btn-sm nav-button btn-outline-info');
+    expect(component.getRequestButtonClass(Command.Put)).toBe('ms-1 btn btn-sm nav-button btn-outline-warning');
+    expect(component.getRequestButtonClass(Command.Patch)).toBe('ms-1 btn btn-sm nav-button btn-outline-warning');
+    expect(component.getRequestButtonClass(Command.Delete)).toBe('ms-1 btn btn-sm nav-button btn-outline-danger');
+    expect(component.getRequestButtonClass(undefined)).toBe('ms-1 btn btn-sm nav-button btn-outline-primary');
   });
 
   it('should populate HAL-FORMS request button class and state', () => {
-    const responseHeaders: HttpHeaders = new HttpHeaders(
-      {
-        'content-type': 'application/prs.hal-forms+json'
-      });
-    responseSubject.next(new Response(new HttpResponse({headers: responseHeaders, body: halFormsResponse}), null));
+    const responseHeaders: HttpHeaders = new HttpHeaders({
+      'content-type': 'application/prs.hal-forms+json',
+    });
+    responseSubject.next(new Response(new HttpResponse({ headers: responseHeaders, body: halFormsResponse }), null));
 
-    expect(component.getRequestButtonClass(Command.Post)).toBe('ms-1 btn btn-sm nav-button btn-outline-info icon-plus');
+    expect(component.getRequestButtonClass(Command.Post)).toBe('ms-1 btn btn-sm nav-button btn-outline-info');
   });
 
   it('should invoke request service when processing command', () => {
@@ -252,16 +279,15 @@ describe('ResponseExplorerComponent', () => {
   });
 
   it('should get HAL-FORMS target', () => {
-    const responseHeaders: HttpHeaders = new HttpHeaders(
-      {
-        'content-type': 'application/prs.hal-forms+json'
-      });
+    const responseHeaders: HttpHeaders = new HttpHeaders({
+      'content-type': 'application/prs.hal-forms+json',
+    });
 
     const halFormsResponseWithTarget = {
       _links: {
         self: {
-          href: 'http://localhost:4200/api/movies'
-        }
+          href: 'http://localhost:4200/api/movies',
+        },
       },
       _templates: {
         default: {
@@ -269,13 +295,14 @@ describe('ResponseExplorerComponent', () => {
           method: 'post',
           contentType: '',
           properties: [],
-          target: 'http://create-movie.com'
-        }
-      }
+          target: 'http://create-movie.com',
+        },
+      },
     };
 
-    responseSubject.next(new Response(
-      new HttpResponse({headers: responseHeaders, body: halFormsResponseWithTarget}), null));
+    responseSubject.next(
+      new Response(new HttpResponse({ headers: responseHeaders, body: halFormsResponseWithTarget }), null)
+    );
 
     expect(component.getRelTargetUrl('xxx', Command.Post)).toBe('http://create-movie.com');
   });
@@ -285,6 +312,12 @@ describe('ResponseExplorerComponent', () => {
     const unknownMethodCommand = component.getCommandForTemplateMethod('XXX');
 
     expect(postCommand).toBe(Command.Post);
+    expect(unknownMethodCommand).toBe(Command.Get);
+  });
+
+  it('should get command for null template method', () => {
+    const unknownMethodCommand = component.getCommandForTemplateMethod();
+
     expect(unknownMethodCommand).toBe(Command.Get);
   });
 
@@ -303,9 +336,9 @@ describe('ResponseExplorerComponent', () => {
     component.jsonRoot = {
       _links: {
         self: {
-          href: 'http://localhost:4200/api/movies'
-        }
-      }
+          href: 'http://localhost:4200/api/movies',
+        },
+      },
     };
 
     expect(component.selfLink).toBeUndefined();
@@ -316,13 +349,13 @@ describe('ResponseExplorerComponent', () => {
   it('should log error during HTTP call', () => {
     spyOn(window.console, 'error');
 
-    responseSubject.error(new Response(null, new HttpErrorResponse({status: 404, statusText: 'Not Found'})));
+    responseSubject.error(new Response(null, new HttpErrorResponse({ status: 404, statusText: 'Not Found' })));
 
     expect(window.console.error).toHaveBeenCalled();
   });
 
   it('should ignore response bodies that are no strings', () => {
-    responseSubject.next(new Response(new HttpResponse<any>({body: 'this is a string'}), null));
+    responseSubject.next(new Response(new HttpResponse<any>({ body: 'this is a string' }), null));
     expect(component.properties).toBeNull();
   });
 
@@ -337,8 +370,68 @@ describe('ResponseExplorerComponent', () => {
   });
 
   it('should construct absolute URL', () => {
-    responseSubject.next(new Response(
-      new HttpResponse<any>({body: '{"_links": { "self": { "href": "/test" }', url: 'http://localhost/'}), null));
+    responseSubject.next(
+      new Response(
+        new HttpResponse<any>({ body: '{"_links": { "self": { "href": "/test" }', url: 'http://localhost/' }),
+        null
+      )
+    );
     expect(component.getRelTargetUrl('/test', Command.Get)).toBe('http://localhost/test');
+  });
+
+  it('should parse HAL-FORMS error response body (e.g., 401) and extract links and affordances', () => {
+    const responseHeaders: HttpHeaders = new HttpHeaders({
+      'content-type': 'application/prs.hal-forms+json',
+    });
+    const errorResponse = new HttpErrorResponse({
+      status: 401,
+      statusText: 'Unauthorized',
+      headers: responseHeaders,
+      error: halFormsResponse,
+      url: 'http://localhost:4200/api/movies/1',
+    });
+
+    responseSubject.next(new Response(null, errorResponse));
+
+    // Even though there's an error, the HAL-FORMS content should be processed
+    expect(component.httpErrorResponse).toBeTruthy();
+    expect(component.httpErrorResponse.status).toBe(401);
+    expect(component.showProperties).toBeTruthy();
+    expect(component.showLinks).toBeTruthy();
+    expect(component.links.length).toBe(2);
+    expect(component.hasHalFormsTemplates).toBeTruthy();
+    expect(component.isHalFormsMediaType).toBeTruthy();
+    expect(Object.keys(component.templates).length).toBe(3);
+  });
+
+  it('should handle error response with no body', () => {
+    const errorResponse = new HttpErrorResponse({
+      status: 500,
+      statusText: 'Internal Server Error',
+      url: 'http://localhost:4200/api/movies/1',
+    });
+
+    responseSubject.next(new Response(null, errorResponse));
+
+    expect(component.httpErrorResponse).toBeTruthy();
+    expect(component.showProperties).toBeFalsy();
+    expect(component.showLinks).toBeFalsy();
+    expect(component.hasHalFormsTemplates).toBeFalsy();
+  });
+
+  it('should handle error response with string body', () => {
+    const errorResponse = new HttpErrorResponse({
+      status: 404,
+      statusText: 'Not Found',
+      error: 'Resource not found',
+      url: 'http://localhost:4200/api/movies/999',
+    });
+
+    responseSubject.next(new Response(null, errorResponse));
+
+    expect(component.httpErrorResponse).toBeTruthy();
+    expect(component.showProperties).toBeFalsy();
+    expect(component.showLinks).toBeFalsy();
+    expect(component.hasHalFormsTemplates).toBeFalsy();
   });
 });

@@ -82,11 +82,16 @@ describe('AppService', () => {
     expect(service.getCustomRequestHeaders()[0].value).toBe('application/json');
     expect(service.getCustomRequestHeaders()[1].key).toBe('authorization');
     expect(service.getCustomRequestHeaders()[1].value).toBe('bearer euztsfghfhgwztuzt');
-    expect(window.sessionStorage.getItem('hash')).toBe('hkey0=accept&hval0=application/json&hkey1=authorization&hval1=bearer euztsfghfhgwztuzt');
+    expect(window.sessionStorage.getItem('hash')).toBe(
+      'hkey0=accept&hval0=application/json&hkey1=authorization&hval1=bearer euztsfghfhgwztuzt'
+    );
   });
 
-  it('should parse sessionStorage "hash" item', () => {
-    window.sessionStorage.setItem('hash', 'theme=Cosmo&layout=3&httpOptions=true&allHttpMethodsForLinks=true&hkey0=accept&hval0=text/plain&uri=https://chatty42.herokuapp.com/api/users');
+  it('should parse window location "hash" item', () => {
+    window.sessionStorage.setItem(
+      'hash',
+      'theme=Cosmo&layout=3&httpOptions=true&allHttpMethodsForLinks=true&hkey0=accept&hval0=text/plain&uri=https://chatty42.herokuapp.com/api/users'
+    );
     service = new AppService();
 
     expect(service.getCustomRequestHeaders()[0].key).toBe('accept');
@@ -99,7 +104,10 @@ describe('AppService', () => {
   });
 
   it('should parse sessionStorage "hash" item with hval before hkey', () => {
-    window.sessionStorage.setItem('hash', 'theme=Cosmo&layout=3&hval0=text/plain&hkey0=accept&uri=https://chatty42.herokuapp.com/api/users');
+    window.sessionStorage.setItem(
+      'hash',
+      'theme=Cosmo&layout=3&hval0=text/plain&hkey0=accept&uri=https://chatty42.herokuapp.com/api/users'
+    );
     service = new AppService();
 
     expect(service.getCustomRequestHeaders()[0].key).toBe('accept');
@@ -109,8 +117,11 @@ describe('AppService', () => {
     expect(service.getUri()).toBe('https://chatty42.herokuapp.com/api/users');
   });
 
-  it('should parse sessionStorage "hash" item with deprecated hkey "url"', () => {
-    window.sessionStorage.setItem('hash', 'theme=Cosmo&layout=3&hval0=text/plain&hkey0=accept&url=https://chatty42.herokuapp.com/api/users');
+  it('should parse window location "hash" item with deprecated hkey "url"', () => {
+    window.sessionStorage.setItem(
+      'hash',
+      'theme=Cosmo&layout=3&hval0=text/plain&hkey0=accept&url=https://chatty42.herokuapp.com/api/users'
+    );
     service = new AppService();
 
     expect(service.getCustomRequestHeaders()[0].key).toBe('accept');
@@ -121,7 +132,10 @@ describe('AppService', () => {
   });
 
   it('should parse sessionStorage "hash" item with unknown hkeys', () => {
-    window.sessionStorage.setItem('hash', 'theme=Cosmo&xxx=7&layout=3&hval0=text/plain&hkey0=accept&yyy=xxx&url=https://chatty42.herokuapp.com/api/users');
+    window.sessionStorage.setItem(
+      'hash',
+      'theme=Cosmo&xxx=7&layout=3&hval0=text/plain&hkey0=accept&yyy=xxx&url=https://chatty42.herokuapp.com/api/users'
+    );
     service = new AppService();
 
     expect(service.getCustomRequestHeaders()[0].key).toBe('accept');
@@ -140,6 +154,32 @@ describe('AppService', () => {
     expect(service.requestHeadersObservable).toBeDefined();
     expect(service.themeObservable).toBeDefined();
     expect(service.uriObservable).toBeDefined();
+    expect(service.scrollableDocumentationObservable).toBeDefined();
   });
 
+  it('should set scrollable documentation', () => {
+    service.setScrollableDocumentation(true);
+    expect(service.getScrollableDocumentation()).toBe(true);
+    expect(window.sessionStorage.getItem('hash')).toBe(
+      'scrollableDocumentation=true'
+    );
+  });
+
+  it('should unset scrollable documentation', () => {
+    service.setScrollableDocumentation(false);
+    expect(service.getScrollableDocumentation()).toBe(false);
+    expect(window.location.hash).toBe('');
+  });
+
+  it('should parse window location hash with scrollableDocumentation', () => {
+    window.sessionStorage.setItem(
+      'hash',
+      'theme=Cosmo&scrollableDocumentation=true&uri=https://example.com/api'
+    );
+    service = new AppService();
+
+    expect(service.getScrollableDocumentation()).toBeTrue();
+    expect(service.getTheme()).toBe('Cosmo');
+    expect(service.getUri()).toBe('https://example.com/api');
+  });
 });

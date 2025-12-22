@@ -1,4 +1,4 @@
-import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { enableProdMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { environment } from './environments/environment';
 import { AppComponent } from './app/app.component';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -14,25 +14,22 @@ function bootstrap() {
   bootstrapped = true;
   bootstrapApplication(AppComponent, {
     providers: [
+      provideZoneChangeDetection(),
       importProvidersFrom(BrowserModule, FormsModule),
-      provideHttpClient(withInterceptorsFromDi())
-    ]
-  })
-    .catch(err => console.log(err));
+      provideHttpClient(withInterceptorsFromDi()),
+    ],
+  }).catch(err => console.log(err));
 }
 
 if (window.opener) {
-  window.addEventListener('message', (event) => {
-    window.sessionStorage.setItem(
-      'hash',
-      event.data,
-    );
+  window.addEventListener('message', event => {
+    window.sessionStorage.setItem('hash', event.data);
     window.dispatchEvent(new Event('storage'));
     if (!bootstrapped) {
       bootstrap();
     }
   });
-  window.opener.postMessage("ready");
+  window.opener.postMessage('ready');
 } else {
   bootstrap();
 }

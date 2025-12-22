@@ -1,13 +1,30 @@
-<div *ngIf="docUri" class="container">
-  <br>
-  <div class="row">
-    <div class="col-lg-12">
-      <div class="page-header first-row">
-        <h5>Documentation</h5>
-      </div>
-      <div>
-        <iframe id="doc-iframe" [src]="docUri" onload="setIframeHeight('doc-iframe')">...</iframe>
+@if (docUri) {
+  <div class="container">
+    <br />
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header first-row">
+          <h5>Documentation</h5>
+        </div>
+        <div>
+          @if (isScrollable) {
+            <iframe
+              id="doc-iframe-scrollable"
+              title="Documentation"
+              [src]="docUri"
+              [style.height]="iframeHeight"
+            ></iframe>
+          }
+          @if (!isScrollable) {
+            <iframe
+              id="doc-iframe"
+              title="Documentation"
+              [src]="docUri"
+              onload="setIframeHeight('doc-iframe')"
+            ></iframe>
+          }
+        </div>
       </div>
     </div>
   </div>
-</div>
+}
