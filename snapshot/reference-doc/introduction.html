@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.18">
+<title>Introduction</title>
+<link rel="stylesheet" href="css/site.css">
+<script src="js/setup.js"></script><script defer src="js/site.js"></script>
+
+</head>
+<body id="introduction" class="article"><div id="banner-container" class="container" role="banner">
+  <div id="banner" class="contained" role="banner">
+    <div id="switch-theme">
+      <input type="checkbox" id="switch-theme-checkbox" />
+      <label for="switch-theme-checkbox">Dark Theme</label>
+    </div>
+  </div>
+</div>
+<div id="tocbar-container" class="container" role="navigation">
+  <div id="tocbar" class="contained" role="navigation">
+    <button id="toggle-toc"></button>
+  </div>
+</div>
+<div id="main-container" class="container">
+  <div id="main" class="contained">
+    <div id="doc" class="doc">
+<div id="header">
+<h1>Introduction</h1>
+<div class="details">
+<span id="revnumber">version 2.2.2-SNAPSHOT</span>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="what-is-hal-explorer"><a class="anchor" href="#what-is-hal-explorer"></a>What is HAL Explorer?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>HAL Explorer is a web-based tool for browsing and exploring RESTful Hypermedia APIs that use the HAL (Hypertext Application Language) and HAL-FORMS specifications. It provides an intuitive interface for developers and API consumers to navigate hypermedia-driven APIs, discover available resources, and interact with them using various HTTP methods.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="why-hal-explorer"><a class="anchor" href="#why-hal-explorer"></a>Why Use HAL Explorer?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Traditional API exploration tools focus on endpoint documentation and testing. HAL Explorer takes a different approach by embracing the hypermedia-driven nature of REST APIs:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Self-Discovery</strong>: Navigate APIs by following links, just as intended by REST and HATEOAS principles</p>
+</li>
+<li>
+<p><strong>Visual Exploration</strong>: See the structure of your API responses with syntax highlighting and collapsible sections</p>
+</li>
+<li>
+<p><strong>Built-in Documentation</strong>: View inline documentation through CURIE links without leaving the interface</p>
+</li>
+<li>
+<p><strong>Developer-Friendly</strong>: Test POST, PUT, PATCH, and DELETE operations with guided form inputs</p>
+</li>
+<li>
+<p><strong>Framework Support</strong>: First-class support for Spring Data REST profiles and HAL-FORMS affordances</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="fundamentals"><a class="anchor" href="#fundamentals"></a>Fundamentals</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>HAL Explorer was inspired by Mike Kelly&#8217;s <a href="https://github.com/mikekelly/hal-browser">HAL-Browser</a> and extends it with modern features including dark mode, multiple themes, HAL-FORMS support, and Spring Data REST integration.</p>
+</div>
+<div class="sect2">
+<h3 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h3>
+<div class="paragraph">
+<p>To get the most out of HAL Explorer and this documentation, you should be familiar with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>REST API Concepts</strong>: Basic understanding of HTTP methods, status codes, and RESTful design</p>
+</li>
+<li>
+<p><strong>HAL Specification</strong>: The <a href="http://stateless.co/hal_specification.html">HAL</a> standard for representing resources with links and embedded resources</p>
+</li>
+<li>
+<p><strong>HAL-FORMS Specification</strong>: The <a href="https://rwcbook.github.io/hal-forms/">HAL-FORMS</a> extension for describing affordances and form templates</p>
+</li>
+<li>
+<p><strong>JSON Format</strong>: Basic knowledge of JSON syntax and structure</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_supported_media_types"><a class="anchor" href="#_supported_media_types"></a>Supported Media Types</h3>
+<div class="paragraph">
+<p>HAL Explorer can consume and display the following media types:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>application/hal+json</code> - Standard HAL format</p>
+</li>
+<li>
+<p><code>application/prs.hal-forms+json</code> - HAL-FORMS format with affordances</p>
+</li>
+<li>
+<p><code>application/json</code> - Plain JSON (limited functionality)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="features"><a class="anchor" href="#features"></a>Features Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>HAL Explorer provides a comprehensive set of features for exploring and interacting with HAL and HAL-FORMS APIs.</p>
+</div>
+<div class="sect2">
+<h3 id="_user_interface"><a class="anchor" href="#_user_interface"></a>User Interface</h3>
+<div class="sect3">
+<h4 id="_theming_and_appearance"><a class="anchor" href="#_theming_and_appearance"></a>Theming and Appearance</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Color Modes</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Dark Mode</strong> - Optimized for low-light environments</p>
+</li>
+<li>
+<p><strong>Light Mode</strong> - Traditional bright interface</p>
+</li>
+<li>
+<p><strong>Auto Mode</strong> - Automatically detects and adapts to system preference (default)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Customizable Themes</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Bootstrap 5 default theme</p>
+</li>
+<li>
+<p>26+ professionally designed <a href="https://bootswatch.com/">Bootswatch themes</a></p>
+</li>
+<li>
+<p>Cosmo theme is the default (clean, modern flat design)</p>
+</li>
+<li>
+<p>All themes adapt to your selected color mode</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_layout_options"><a class="anchor" href="#_layout_options"></a>Layout Options</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>2 Column Layout</strong> (Default)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Resource explorer on the left</p>
+</li>
+<li>
+<p>Response details on the right</p>
+</li>
+<li>
+<p>Documentation panel toggles on demand</p>
+</li>
+<li>
+<p>Ideal for smaller screens or focused work</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>3 Column Layout</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Resource explorer on the left</p>
+</li>
+<li>
+<p>Response details in the middle</p>
+</li>
+<li>
+<p>Documentation always visible on the right</p>
+</li>
+<li>
+<p>Best for larger screens and documentation-heavy APIs</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_api_interaction"><a class="anchor" href="#_api_interaction"></a>API Interaction</h3>
+<div class="sect3">
+<h4 id="_http_method_support"><a class="anchor" href="#_http_method_support"></a>HTTP Method Support</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Full REST Method Support</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>GET - Retrieve resources</p>
+</li>
+<li>
+<p>POST - Create new resources</p>
+</li>
+<li>
+<p>PUT - Replace existing resources</p>
+</li>
+<li>
+<p>PATCH - Partially update resources</p>
+</li>
+<li>
+<p>DELETE - Remove resources</p>
+</li>
+<li>
+<p>OPTIONS - Discover available operations (optional, configurable)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>URI Handling</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Simple URIs - Direct resource access</p>
+</li>
+<li>
+<p>Templated URIs - Interactive parameter editor with validation</p>
+</li>
+<li>
+<p>Automatic template parameter detection</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_request_customization"><a class="anchor" href="#_request_customization"></a>Request Customization</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Custom Headers</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Add authorization tokens (Bearer, Basic Auth, etc.)</p>
+</li>
+<li>
+<p>Set custom Accept headers for HAL or HAL-FORMS</p>
+</li>
+<li>
+<p>Configure any HTTP header needed by your API</p>
+</li>
+<li>
+<p>Headers stored in URL fragment for sharing</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Request Editor</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Form-based input for HAL-FORMS and Spring profiles</p>
+</li>
+<li>
+<p>Real-time validation with error messages</p>
+</li>
+<li>
+<p>Query parameter support for templated URIs</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Keyboard Shortcuts</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Enter</code> - Submit requests</p>
+</li>
+<li>
+<p><code>ESC</code> - Close dialogs</p>
+</li>
+<li>
+<p>Streamlined workflow for rapid exploration</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_features"><a class="anchor" href="#_advanced_features"></a>Advanced Features</h3>
+<div class="sect3">
+<h4 id="_spring_data_rest_integration"><a class="anchor" href="#_spring_data_rest_integration"></a>Spring Data REST Integration</h4>
+<div class="paragraph">
+<p>HAL Explorer provides first-class support for Spring Data REST APIs:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Automatic detection of Spring Data REST profiles</p>
+</li>
+<li>
+<p>JSON Schema-based property discovery</p>
+</li>
+<li>
+<p>Auto-populated form fields based on entity definitions</p>
+</li>
+<li>
+<p>Content-type negotiation and detection</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_hal_forms_support"><a class="anchor" href="#_hal_forms_support"></a>HAL-FORMS Support</h4>
+<div class="paragraph">
+<p>Full implementation of the HAL-FORMS specification:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Template elements displayed inline with links</p>
+</li>
+<li>
+<p>Property definitions with type information</p>
+</li>
+<li>
+<p>Options support (inline values and external links)</p>
+</li>
+<li>
+<p>Multiple selection for array properties</p>
+</li>
+<li>
+<p>Comprehensive validation (required fields, regex patterns, min/max values)</p>
+</li>
+<li>
+<p>Prompt text and placeholder support</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_documentation_integration"><a class="anchor" href="#_documentation_integration"></a>Documentation Integration</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>CURIE-based Documentation</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Click book icons to view inline documentation</p>
+</li>
+<li>
+<p>Documentation appears in dedicated panel with fixed-height scrollable iframe</p>
+</li>
+<li>
+<p>No need to leave the interface or consult external docs</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_error_handling"><a class="anchor" href="#_error_handling"></a>Error Handling</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Graceful handling of HTTP error responses (4xx, 5xx)</p>
+</li>
+<li>
+<p>HAL-FORMS documents displayed even in error scenarios</p>
+</li>
+<li>
+<p>Links and affordances remain accessible for recovery</p>
+</li>
+<li>
+<p>Clear display of error status codes and messages</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_data_management"><a class="anchor" href="#_data_management"></a>Data Management</h3>
+<div class="sect3">
+<h4 id="_browser_storage"><a class="anchor" href="#_browser_storage"></a>Browser Storage</h4>
+<div class="paragraph">
+<p>All settings and preferences persist across sessions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Color mode preference</p>
+</li>
+<li>
+<p>Selected theme</p>
+</li>
+<li>
+<p>Column layout choice</p>
+</li>
+<li>
+<p>HTTP OPTIONS setting</p>
+</li>
+<li>
+<p>HAL-FORMS method enablement</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Storage uses the <code>hal-explorer.</code> namespace to avoid conflicts.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_bookmarking_and_sharing"><a class="anchor" href="#_bookmarking_and_sharing"></a>Bookmarking and Sharing</h4>
+<div class="paragraph">
+<p>Configuration embedded in URLs for easy sharing:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Current API URI</p>
+</li>
+<li>
+<p>Custom request headers</p>
+</li>
+<li>
+<p>Share exact API state with colleagues</p>
+</li>
+<li>
+<p>Bookmark frequently accessed endpoints</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_response_exploration"><a class="anchor" href="#_response_exploration"></a>Response Exploration</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Syntax-Highlighted Display</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Color-coded JSON for easy reading</p>
+</li>
+<li>
+<p>Expandable/collapsible sections</p>
+</li>
+<li>
+<p>Navigate complex nested structures</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Organized Sections</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Properties - Top-level resource attributes</p>
+</li>
+<li>
+<p>Links - Available hypermedia links with affordances</p>
+</li>
+<li>
+<p>Embedded Resources - Nested resources with full link support</p>
+</li>
+<li>
+<p>Templates - HAL-FORMS affordances (when available)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Response Metadata</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>HTTP status code and status text</p>
+</li>
+<li>
+<p>All response headers</p>
+</li>
+<li>
+<p>Full response body</p>
+</li>
+<li>
+<p>Response timing information</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 2.2.2-SNAPSHOT<br>
+Last updated 2026-02-01 23:48:35 UTC
+</div>
+</div>
+</div>
+  </div>
+</div>
+</body>
+</html>
