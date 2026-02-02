@@ -39,7 +39,11 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display HAL sections when rendering users resource', async ({ page }) => {
-    await page.goto('/#uri=http://localhost:3000/movies.hal-forms.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/movies.hal-forms.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('h5:has-text("JSON Properties")').first()).toBeVisible();
@@ -51,7 +55,11 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display only Links section when rendering root api', async ({ page }) => {
-    await page.goto('/#uri=http://localhost:3000/index.hal.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('text="JSON Properties"').first()).not.toBeVisible();
@@ -62,7 +70,11 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display POST request dialog', async ({ page }) => {
-    await page.goto('/#uri=http://localhost:3000/movies.hal-forms.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/movies.hal-forms.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Wait for the HAL-FORMS Template Elements section to be loaded
@@ -81,7 +93,11 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display user profile in POST request dialog', { tag: '@flaky' }, async ({ page }) => {
-    await page.goto('/#uri=http://localhost:3000/index.hal.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Wait for the links section to be fully loaded
@@ -114,7 +130,11 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display expanded URI in HAL-FORMS GET request dialog', async ({ page }) => {
-    await page.goto('/#uri=http://localhost:3000/filter.hal-forms.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/filter.hal-forms.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Wait for the HAL-FORMS section to be loaded
@@ -141,7 +161,11 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should close modal on ESC key', async ({ page }) => {
-    await page.goto('/#uri=http://localhost:3000/filter.hal-forms.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/filter.hal-forms.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Wait for the HAL-FORMS section to be loaded
@@ -170,7 +194,11 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should submit request on Enter key in parameterized GET request dialog', async ({ page }) => {
-    await page.goto('/#uri=http://localhost:3000/filter.hal-forms.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/filter.hal-forms.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Wait for the HAL-FORMS section to be loaded
@@ -206,7 +234,11 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display correct properties HAL-FORMS POST request dialog', async ({ page }) => {
-    await page.goto('/#uri=http://localhost:3000/2posts1get.hal-forms.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/2posts1get.hal-forms.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Click the first POST button (Post 1 template)
@@ -225,7 +257,11 @@ test.describe('HAL Explorer App', () => {
 
   test('should update URI input field when clicking a link', async ({ page }) => {
     // Navigate to the root API which has links
-    await page.goto('/#uri=http://localhost:3000/index.hal.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Verify the initial URI is displayed in the input field
@@ -247,7 +283,11 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display links and affordances for 401 error with HAL-FORMS content', async ({ page }) => {
-    await page.goto('/#uri=http://localhost:3000/error-401-with-templates.hal-forms.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/error-401-with-templates.hal-forms.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Verify that error is displayed
