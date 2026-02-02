@@ -1,0 +1,108 @@
+[[toolbar]]
+= Toolbar
+
+In the top-level toolbar, you can choose the color mode, theme, and settings, and view the About dialog.
+
+[[color-mode]]
+== Color Mode
+
+HAL Explorer supports three color modes:
+
+* *Light* - Light color scheme
+* *Dark* - Dark color scheme
+* *Auto* - Automatically detects your system's preferred color scheme (default)
+
+The color mode is stored in your browser's local storage and persists across sessions.
+
+[[theming]]
+== Theming
+
+HAL Explorer provides a rich theming experience with support of the Bootstrap default theme and 26 https://bootswatch.com/[Bootswatch] themes (by Thomas Park).
+The default theme is *Cosmo*, which offers a clean, modern look that works well with both light and dark color modes.
+
+You can select from 27 professionally designed themes to customize the look and feel of HAL Explorer:
+
+* *Bootstrap Default* - Bootstrap's base theme
+* *Brite* - High contrast, colorful theme
+* *Cerulean* - Calm blue theme
+* *Cosmo* - Modern, flat design with blue accents (HAL Explorer default theme)
+* *Cyborg* - Dark theme with slate gray
+* *Darkly* - Dark theme with subdued colors
+* *Flatly* - Flat design with green accents
+* *Journal* - Newspaper-inspired crisp theme
+* *Litera* - Clean, readable typography
+* *Lumen* - Light theme with soft shadows
+* *Lux* - Elegant with gold accents
+* *Materia* - Material Design inspired
+* *Minty* - Fresh minty theme
+* *Morph* - Modern with gradients
+* *Pulse* - Purple-themed design
+* *Quartz* - Dark professional theme
+* *Sandstone* - Flat design with orange accents
+* *Simplex* - Minimalist white theme
+* *Sketchy* - Hand-drawn style
+* *Slate* - Dark theme with blue highlights
+* *Solar* - Dark theme with yellow highlights
+* *Spacelab* - Modern flat blue theme
+* *Superhero* - Dark comic book style
+* *United* - Ubuntu-inspired design
+* *Vapor* - Retro synthwave theme
+* *Yeti* - Clean, snowy white theme
+* *Zephyr* - Light, airy design
+
+Here is an example of HAL Explorer using the Dark Cosmo theme:
+
+image::img/hal-explorer-dark.png[HAL Explorer with Dark Cosmo theme,width=80%]
+
+The selected theme is stored in your browser's local storage with the `hal-explorer.theme` key and persists across sessions. Themes automatically adapt to your selected color mode (light/dark/auto) for an optimal viewing experience.
+
+[[settings]]
+== Settings
+
+The _Settings_ menu helps you to customize HAL Explorer's behavior and user interface. All settings are automatically saved to your browser's local storage with the `hal-explorer.` prefix and persist across sessions.
+
+=== Layout
+
+Choose between different column layouts to optimize your workspace (see <<Curie-based Documentation>> for more details):
+
+* *2 Column Layout* - Default layout with two columns
+** Documentation panel appears only when explicitly toggled
+** Provides more horizontal space for the main content
+** Ideal for smaller screens or when documentation is not frequently needed
+
+* *3 Column Layout* - Expanded layout with three columns
+** Documentation is always visible when available
+** Provides a comprehensive overview of resources, actions, and documentation simultaneously
+** Best for larger screens and documentation-heavy APIs
+
+=== Use HTTP OPTIONS
+
+When enabled, HAL Explorer automatically sends HTTP OPTIONS requests to discover which HTTP methods are supported for a given link URI.
+
+This feature helps you understand the available operations without having to consult external API documentation. The supported methods are then displayed as available actions for that resource.
+
+*Default:* Disabled
+
+=== Enable all HTTP Methods for HAL-FORMS Links
+
+When enabled, all HTTP methods (GET, POST, PUT, PATCH, DELETE, etc.) are available for links in HAL-FORMS documents, even if no explicit template is defined for that method.
+
+Typically, HAL-FORMS `_templates` explicitly specify affordances with their corresponding HTTP methods. However, this setting is useful when:
+
+* You need to test different HTTP methods on the same endpoint
+* Your API supports additional methods not documented in the HAL-FORMS template
+* You want to explore API capabilities beyond the standard template definitions
+
+*Default:* Disabled
+
+*Note:* Use this setting with caution, as it may allow operations that the API doesn't actually support.
+
+[[about]]
+== About
+
+The About dialog displays:
+
+* Author information
+* Version number
+* GitHub repository link
+* License information (MIT)

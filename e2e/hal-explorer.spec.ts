@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('HAL Explorer App', () => {
-
-  const expectResponseDetailsAreDisplayed = async (page) => {
+  const expectResponseDetailsAreDisplayed = async page => {
     await expect(page.locator('h5:has-text("Response Status")')).toBeVisible();
     await expect(page.locator('h5:has-text("Response Headers")')).toBeVisible();
     await expect(page.locator('h5:has-text("Response Body")')).toBeVisible();
@@ -11,9 +10,9 @@ test.describe('HAL Explorer App', () => {
   test('Visits the initial HAL Explorer page', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.navbar-brand')).toContainText('HAL Explorer');
-    await expect(page.locator('nav .navbar-nav a.nav-link', { hasText: 'Theme' })).toBeVisible();
-    await expect(page.locator('nav .navbar-nav a.nav-link', { hasText: 'Settings' })).toBeVisible();
-    await expect(page.locator('nav .navbar-nav a.nav-link', { hasText: 'About' })).toBeVisible();
+    await expect(page.locator('nav .navbar-nav button.nav-link', { hasText: 'Theme' })).toBeVisible();
+    await expect(page.locator('nav .navbar-nav button.nav-link', { hasText: 'Settings' })).toBeVisible();
+    await expect(page.locator('nav .navbar-nav button.nav-link', { hasText: 'About' })).toBeVisible();
     await expect(page.locator('button.btn.btn-secondary', { hasText: 'Edit Headers' })).toBeVisible();
     await expect(page.locator('button.btn.btn-primary', { hasText: 'Go!' })).toBeVisible();
   });
@@ -40,11 +39,7 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display HAL sections when rendering users resource', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/movies.hal-forms.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/movies.hal-forms.json');
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('h5:has-text("JSON Properties")').first()).toBeVisible();
@@ -56,11 +51,7 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display only Links section when rendering root api', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/index.hal.json');
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('text="JSON Properties"').first()).not.toBeVisible();
@@ -71,11 +62,7 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display POST request dialog', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/movies.hal-forms.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/movies.hal-forms.json');
     await page.waitForLoadState('networkidle');
 
     // Wait for the HAL-FORMS Template Elements section to be loaded
@@ -94,20 +81,19 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display user profile in POST request dialog', { tag: '@flaky' }, async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/index.hal.json');
     await page.waitForLoadState('networkidle');
 
     // Wait for the links section to be fully loaded
     await expect(page.locator('h5:has-text("Links")').first()).toBeVisible();
 
     // Ensure Bootstrap is loaded
-    await page.waitForFunction(() => {
-      return typeof (window as any).bootstrap !== 'undefined';
-    }, { timeout: 10000 });
+    await page.waitForFunction(
+      () => {
+        return typeof (window as any).bootstrap !== 'undefined';
+      },
+      { timeout: 10000 }
+    );
 
     // Ensure the POST button is visible and clickable
     const postButton = page.locator('button:has(i.bi-plus-lg)').first();
@@ -128,11 +114,7 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should display expanded URI in HAL-FORMS GET request dialog', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/filter.hal-forms.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/filter.hal-forms.json');
     await page.waitForLoadState('networkidle');
 
     // Wait for the HAL-FORMS section to be loaded
@@ -155,16 +137,11 @@ test.describe('HAL Explorer App', () => {
     await page.locator('input[id="request-input-completed"]').press('Tab');
 
     // Wait for the URI to update by checking it contains the expected value
-    await expect(page.locator('[id="request-input-expanded-uri"]'))
-      .toContainText('title=myTitle', { timeout: 2000 });
+    await expect(page.locator('[id="request-input-expanded-uri"]')).toContainText('title=myTitle', { timeout: 2000 });
   });
 
   test('should close modal on ESC key', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/filter.hal-forms.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/filter.hal-forms.json');
     await page.waitForLoadState('networkidle');
 
     // Wait for the HAL-FORMS section to be loaded
@@ -193,11 +170,7 @@ test.describe('HAL Explorer App', () => {
   });
 
   test('should submit request on Enter key in parameterized GET request dialog', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/filter.hal-forms.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/filter.hal-forms.json');
     await page.waitForLoadState('networkidle');
 
     // Wait for the HAL-FORMS section to be loaded
@@ -229,16 +202,11 @@ test.describe('HAL Explorer App', () => {
     await expect(modal).not.toHaveClass(/show/, { timeout: 5000 });
 
     // Verify the URL was updated with the title parameter (meaning the request was made)
-    expect(await page.evaluate(() => sessionStorage.getItem('hash')))
-      .toContain('title=myTitle');
+    await expect(page).toHaveURL(/title=myTitle/);
   });
 
   test('should display correct properties HAL-FORMS POST request dialog', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/2posts1get.hal-forms.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/2posts1get.hal-forms.json');
     await page.waitForLoadState('networkidle');
 
     // Click the first POST button (Post 1 template)
@@ -257,11 +225,7 @@ test.describe('HAL Explorer App', () => {
 
   test('should update URI input field when clicking a link', async ({ page }) => {
     // Navigate to the root API which has links
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/index.hal.json');
     await page.waitForLoadState('networkidle');
 
     // Verify the initial URI is displayed in the input field
@@ -273,8 +237,7 @@ test.describe('HAL Explorer App', () => {
     await page.locator('button:has(i.bi-chevron-left)').first().click();
 
     // Wait for the browser URL to update
-    expect(await page.evaluate(() => sessionStorage.getItem('hash')))
-      .toContain('uri=http://localhost:3000/users.hal.json');
+    await expect(page).toHaveURL(/#uri=http:\/\/localhost:3000\/users\.hal\.json/);
 
     // Wait for navigation to complete
     await page.waitForLoadState('networkidle');
@@ -283,69 +246,8 @@ test.describe('HAL Explorer App', () => {
     await expect(uriInput).toHaveValue('http://localhost:3000/users.hal.json');
   });
 
-  test('should toggle scrollable documentation setting via UI', async ({ page }) => {
-    // Navigate to a simple resource first
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
-      window.dispatchEvent(new Event('storage'));
-    });
-    await page.waitForLoadState('networkidle');
-
-    // Verify the page loads correctly
-    await expect(page.locator('h5:has-text("Links")').first()).toBeVisible();
-
-    // Verify the URL does NOT initially include scrollableDocumentation=true
-    await expect(page).not.toHaveURL(/scrollableDocumentation=true/);
-
-    // Open the Settings menu
-    const settingsDropdown = page.locator('a.nav-link', { hasText: 'Settings' });
-    await settingsDropdown.click();
-    await expect(page.locator('.dropdown-menu[aria-labelledby="navbarDropdownLayout"]')).toBeVisible();
-
-    // Verify the "Scrollable Documentation" setting does NOT initially have a checkmark
-    const scrollableDocSetting = page.locator('.dropdown-item', { hasText: 'Scrollable Documentation' });
-    await expect(scrollableDocSetting).toBeVisible();
-    const checkIcon = scrollableDocSetting.locator('i.bi-check');
-    const iconStyleBefore = await checkIcon.evaluate((el: HTMLElement) => window.getComputedStyle(el).visibility);
-    expect(iconStyleBefore).toBe('hidden');
-
-    // Click the "Scrollable Documentation" setting to enable it
-    await scrollableDocSetting.click();
-
-    // Wait a moment for the setting to be applied
-    await page.waitForTimeout(500);
-
-    // Note: Due to a known issue, the URI parameter may be lost when toggling settings
-    // We're testing that the setting itself toggles correctly, not the URL persistence
-
-    // Open Settings menu again to verify the checkmark is now shown
-    await settingsDropdown.click();
-    await expect(page.locator('.dropdown-menu[aria-labelledby="navbarDropdownLayout"]')).toBeVisible();
-
-    // Verify the checkmark is now visible
-    const iconStyleAfter = await checkIcon.evaluate((el: HTMLElement) => window.getComputedStyle(el).visibility);
-    expect(iconStyleAfter).not.toBe('hidden');
-
-    // Click the setting again to disable it
-    await scrollableDocSetting.click();
-    await page.waitForTimeout(500);
-
-    // Open Settings menu one more time
-    await settingsDropdown.click();
-    await expect(page.locator('.dropdown-menu[aria-labelledby="navbarDropdownLayout"]')).toBeVisible();
-
-    // Verify the checkmark is hidden again
-    const iconStyleFinal = await checkIcon.evaluate((el: HTMLElement) => window.getComputedStyle(el).visibility);
-    expect(iconStyleFinal).toBe('hidden');
-  });
-
   test('should display links and affordances for 401 error with HAL-FORMS content', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/error-401-with-templates.hal-forms.json');
-      window.dispatchEvent(new Event('storage'));
-    });
+    await page.goto('/#uri=http://localhost:3000/error-401-with-templates.hal-forms.json');
     await page.waitForLoadState('networkidle');
 
     // Verify that error is displayed
@@ -370,6 +272,4 @@ test.describe('HAL Explorer App', () => {
     await expect(page.getByRole('cell', { name: 'Login', exact: true })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Register', exact: true })).toBeVisible();
   });
-
 });
-

@@ -1,6 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import utpl from 'uri-templates';
-import { URITemplate } from 'uri-templates';
+import utpl, { URITemplate } from 'uri-templates';
 import { AppService, RequestHeader } from '../app.service';
 import { Command, EventType, HttpRequestEvent, RequestService, UriTemplateParameter } from './request.service';
 import { RequestValidatorDirective } from './request-validator.directive';
@@ -85,22 +84,17 @@ export class RequestComponent implements OnInit {
                   // Hack to poll and wait for the asynchronous HTTP call
                   // that fills property.options.inline
                   for (let i = 0; i < 10; i++) {
-                    if (!options.inline) {
-                      try {
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                      } catch {
-                        // ignore
-                      }
-                    } else {
+                    if (options.inline) {
                       break;
+                    }
+                    try {
+                      await new Promise(resolve => setTimeout(resolve, 50));
+                    } catch {
+                      // ignore
                     }
                   }
                 }
-                if (!options.inline) {
-                  console.warn('Cannot compute HAL-FORMS options for property "' + property.name + '".');
-                  console.warn('Will ignore HAL-FORMS options for property "' + property.name + '".');
-                  property.options = undefined;
-                } else {
+                if (options.inline) {
                   property.options.computedOptions = this.getHalFormsOptions(property);
 
                   if (options.selectedValues) {
@@ -109,7 +103,7 @@ export class RequestComponent implements OnInit {
                     } else {
                       property.value = options.selectedValues;
                     }
-                  } else if (!property.required && !options.selectedValues && !(options?.minItems >= 1)) {
+                  } else if (!property.required && !options.selectedValues && (options?.minItems ?? 0) < 1) {
                     property.value = this.noValueSelected;
                   } else if (property.required && !options.selectedValues && options.computedOptions) {
                     if (options?.maxItems === 1) {
@@ -118,6 +112,10 @@ export class RequestComponent implements OnInit {
                       property.value = [property.options.computedOptions[0].value];
                     }
                   }
+                } else {
+                  console.warn('Cannot compute HAL-FORMS options for property "' + property.name + '".');
+                  console.warn('Will ignore HAL-FORMS options for property "' + property.name + '".');
+                  property.options = undefined;
                 }
               }
             }
@@ -150,7 +148,16 @@ export class RequestComponent implements OnInit {
       }
     });
 
-    this.appService.uriObservable.subscribe(url => this.goFromHashChange(url));
+    // Subscribe to URI changes to update the input field
+    // Don't make HTTP requests here - only update the display
+    this.appService.uriObservable.subscribe(url => {
+      this.uri = url;
+      // Only make HTTP request if this came from browser navigation (back/forward)
+      // not from programmatic setUri calls during HTTP requests
+      if (this.appService.isFromBrowserNavigation()) {
+        this.requestService.getUri(url);
+      }
+    });
     this.appService.requestHeadersObservable.subscribe(requestHeaders => {
       this.tempRequestHeaders = requestHeaders;
       this.updateRequestHeaders();
@@ -169,6 +176,12 @@ export class RequestComponent implements OnInit {
   }
 
   makeHttpRequest() {
+    // Blur the active element to prevent aria-hidden accessibility violation
+    // when Bootstrap closes the modal
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     this.requestService.requestUri(
       this.newRequestUri,
       Command[this.selectedHttpMethod],
@@ -179,15 +192,29 @@ export class RequestComponent implements OnInit {
 
   handleModalKeydown(event: KeyboardEvent, form: any) {
     if (event.key === 'Enter') {
+      // Don't submit if focus is in a textarea (body field) - allow multiline input
+      const target = event.target as HTMLElement;
+      if (target?.tagName === 'TEXTAREA') {
+        return;
+      }
+
       event.preventDefault();
       // Check if the form is valid before submitting
-      if (form && form.valid) {
+      if (form?.valid) {
         // Click the Go button which will submit and close the modal
         const goButton = document.getElementById('requestDialogGoButton');
         if (goButton) {
           goButton.click();
         }
       }
+    }
+  }
+
+  blurActiveElement() {
+    // Blur the active element to prevent aria-hidden accessibility violation
+    // when Bootstrap closes the modal
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
     }
   }
 
@@ -234,9 +261,9 @@ export class RequestComponent implements OnInit {
             '  "' +
             key +
             '": ' +
-            (this.jsonSchema[key].type !== 'integer' ? '"' : '') +
+            (this.jsonSchema[key].type === 'integer' ? '' : '"') +
             this.jsonSchema[key].value +
-            (this.jsonSchema[key].type !== 'integer' ? '"' : '');
+            (this.jsonSchema[key].type === 'integer' ? '' : '"');
           hasQueryParams = true;
         }
       }
@@ -267,10 +294,8 @@ export class RequestComponent implements OnInit {
             } else {
               this.newRequestUri += '&';
             }
-          } else {
-            if (!hasBody) {
-              this.newRequestUri += '?';
-            }
+          } else if (!hasBody) {
+            this.newRequestUri += '?';
           }
 
           if (hasBody) {
@@ -279,20 +304,18 @@ export class RequestComponent implements OnInit {
             } else {
               this.requestBody += '  "' + item.name + '": ' + '"' + item.value + '"';
             }
-          } else {
+          } else if (optionsAsArray && Array.isArray(item.value)) {
             // For GET requests with multiple values (array), repeat the parameter name
-            if (optionsAsArray && Array.isArray(item.value)) {
-              // Add each value as a separate query parameter with the same name
-              for (let i = 0; i < item.value.length; i++) {
-                if (i > 0) {
-                  this.newRequestUri += '&';
-                }
-                this.newRequestUri += item.name + '=' + encodeURIComponent(item.value[i]);
+            // Add each value as a separate query parameter with the same name
+            for (let i = 0; i < item.value.length; i++) {
+              if (i > 0) {
+                this.newRequestUri += '&';
               }
-            } else {
-              // Single value (not an array)
-              this.newRequestUri += item.name + '=' + encodeURIComponent(item.value);
+              this.newRequestUri += item.name + '=' + encodeURIComponent(item.value[i]);
             }
+          } else {
+            // Single value (not an array)
+            this.newRequestUri += item.name + '=' + encodeURIComponent(item.value);
           }
           hasQueryParams = true;
         }
@@ -316,6 +339,12 @@ export class RequestComponent implements OnInit {
   }
 
   updateRequestHeaders() {
+    // Blur the active element to prevent aria-hidden accessibility violation
+    // when Bootstrap closes the modal
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     this.requestHeaders = [];
     for (const requestHeader of this.tempRequestHeaders) {
       const key: string = requestHeader.key.trim();
@@ -441,7 +470,7 @@ export class RequestComponent implements OnInit {
     const options = property.options;
     const dictionaryObjects: DictionaryObject[] = [];
 
-    if (!property.required && options.maxItems === 1 && !(options.minItems >= 1)) {
+    if (!property.required && options.maxItems === 1 && (options.minItems ?? 0) < 1) {
       dictionaryObjects.push(new DictionaryObject(this.noValueSelected, this.noValueSelected));
     }
 
@@ -449,24 +478,22 @@ export class RequestComponent implements OnInit {
     const valueField = options?.valueField || 'value';
 
     if (options.inline) {
-      if (!(options.inline instanceof Array)) {
+      if (!Array.isArray(options.inline)) {
         console.warn('HAL-FORMS: Selectable options for property "' + property.name + '" must be an array');
         console.warn('=> Property "' + property.name + '" input will be rendered as HTML "input"');
         property.options = undefined; // this leads to updating the HTML to 'input' instead of 'select'
         return dictionaryObjects;
       }
       for (const entry of options.inline) {
-        if (typeof entry === 'string' || entry instanceof String) {
+        if (typeof entry === 'string') {
           dictionaryObjects.push(new DictionaryObject(entry, entry));
+        } else if (entry[promptField] && entry[valueField]) {
+          dictionaryObjects.push(new DictionaryObject(entry[promptField], entry[valueField]));
         } else {
-          if (entry[promptField] && entry[valueField]) {
-            dictionaryObjects.push(new DictionaryObject(entry[promptField], entry[valueField]));
-          } else {
-            console.warn('HAL-FORMS: Selectable options for property "' + property.name + '" are not parsable');
-            console.warn('=> Property "' + property.name + '" input will be rendered as HTML "input"');
-            property.options = undefined; // this leads to updating the HTML to 'input' instead of 'select'
-            return dictionaryObjects;
-          }
+          console.warn('HAL-FORMS: Selectable options for property "' + property.name + '" are not parsable');
+          console.warn('=> Property "' + property.name + '" input will be rendered as HTML "input"');
+          property.options = undefined; // this leads to updating the HTML to 'input' instead of 'select'
+          return dictionaryObjects;
         }
       }
     }

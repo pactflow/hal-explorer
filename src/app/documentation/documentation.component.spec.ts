@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DocumentationComponent, getDocHeight } from './documentation.component';
+import { DocumentationComponent } from './documentation.component';
 import { RequestService } from '../request/request.service';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AppService } from '../app.service';
 import { Subject } from 'rxjs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('DocumentationComponent', () => {
   let component: DocumentationComponent;
@@ -12,36 +12,38 @@ describe('DocumentationComponent', () => {
   let documentationSubject;
   let responseSubject;
 
-  beforeEach(waitForAsync(() => {
-    const requestServiceMock = jasmine.createSpyObj(['getResponseObservable', 'getDocumentationObservable']);
+  beforeEach(async () => {
+    const requestServiceMock = {
+      getResponseObservable: vi.fn(),
+      getDocumentationObservable: vi.fn(),
+    };
     documentationSubject = new Subject<string>();
     responseSubject = new Subject<string>();
-    requestServiceMock.getDocumentationObservable.and.returnValue(documentationSubject);
-    requestServiceMock.getResponseObservable.and.returnValue(responseSubject);
+    requestServiceMock.getDocumentationObservable.mockReturnValue(documentationSubject);
+    requestServiceMock.getResponseObservable.mockReturnValue(responseSubject);
 
-    const domSanitizerMock = jasmine.createSpyObj(['bypassSecurityTrustResourceUrl']);
-    domSanitizerMock.bypassSecurityTrustResourceUrl.and.returnValue('/doc');
-
-    const scrollableDocumentationSubject = new Subject<boolean>();
-    const appServiceMock = jasmine.createSpyObj(['getScrollableDocumentation'], {
-      scrollableDocumentationObservable: scrollableDocumentationSubject,
-    });
-    appServiceMock.getScrollableDocumentation.and.returnValue(false);
+    const domSanitizerMock = {
+      bypassSecurityTrustResourceUrl: vi.fn(),
+    };
+    domSanitizerMock.bypassSecurityTrustResourceUrl.mockReturnValue('/doc');
 
     TestBed.configureTestingModule({
       imports: [DocumentationComponent],
       providers: [
         { provide: RequestService, useValue: requestServiceMock },
         { provide: DomSanitizer, useValue: domSanitizerMock },
-        { provide: AppService, useValue: appServiceMock },
       ],
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DocumentationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should create', () => {
@@ -55,7 +57,7 @@ describe('DocumentationComponent', () => {
   });
 
   it('should log error on document observable error', () => {
-    spyOn(window.console, 'error');
+    vi.spyOn(window.console, 'error');
     documentationSubject.error('my error');
 
     expect(window.console.error).toHaveBeenCalled();
@@ -68,55 +70,18 @@ describe('DocumentationComponent', () => {
     expect(component.docUri).toBeUndefined();
   });
 
-  it('should set iFrame height', () => {
-    const iFrame = document.createElement('iframe');
-    const html = '<body>Foo</body>';
-    iFrame.src = 'data:text/html;charset=utf-8,' + encodeURI(html);
-    iFrame.id = 'doc-iframe';
-    document.body.appendChild(iFrame);
-
-    (window as any).setIframeHeight(iFrame.id);
-
-    expect(iFrame.style.height).toBe('14px');
-  });
-
-  it('should get iframe doc height', () => {
-    const docHeight: number = getDocHeight(document);
-    expect(docHeight).toBeGreaterThan(0);
-  });
-
-  it('should get iframe doc height with parameter "undefined"', () => {
-    const docHeight: number = getDocHeight(undefined);
-    expect(docHeight).toBeGreaterThan(0);
-  });
-
-  it('should get iframe doc height', () => {
-    const iFrame = { style: {}, contentWindow: { document } };
-    spyOn(document, 'getElementById').and.returnValue(iFrame as any);
-
-    (window as any).setIframeHeight(1);
-
-    const docHeight: number = getDocHeight(document);
-    expect(docHeight).toBeGreaterThan(0);
-  });
-
-  it('should not get iframe doc height from cross origin', () => {
-    const iFrame = { style: {}, contentDocument: {} };
-    spyOn(document, 'getElementById').and.returnValue(iFrame as any);
-
-    (window as any).setIframeHeight(1);
-
-    expect((iFrame.style as any).height).not.toBe('10px');
-  });
-
   it('should update iframe height on window resize', () => {
-    component.isScrollable = true;
+    // Mock window.innerHeight
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: 800,
+    });
 
     // Trigger resize event
     component.onResize();
 
-    // Height should be calculated
-    expect(component.iframeHeight).toBeDefined();
-    expect(component.iframeHeight).not.toBe('0px');
+    // Height should be calculated: 800 - 56 (navbar) - 90 (header) - 10 (padding) + 20 (additional) = 664px
+    expect(component.iframeHeight).toBe('664px');
   });
 });

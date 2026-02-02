@@ -21,7 +21,7 @@ jobs:
       # See: https://github.com/actions/cache/blob/main/examples.md#node---yarn
       - name: Get Yarn cache directory
         id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
       - name: Use Yarn cache
         uses: actions/cache@v5
@@ -43,17 +43,17 @@ jobs:
       - name: Unit tests
         run: yarn test:headless
 
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/vitest/lcov.info
+
       - name: Install Playwright Browsers
         run: yarn playwright install chromium --with-deps
 
       - name: E2E tests
         run: yarn e2e:chromium
-
-      - name: Upload coverage to codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/ng-test/lcov.info
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -81,23 +81,6 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/docs/gh-pages/snapshot
-          destination_dir: snapshot
+          publish_dir: ./build/docs/gh-pages
           publish_branch: gh-pages
-          force_orphan: false
-
-#      - name: Trigger Chatty build
-#        if: ${{ github.event_name == 'push' }}
-#        uses: benc-uk/workflow-dispatch@v1
-#        with:
-#          workflow: Build
-#          repo: toedter/chatty
-#          token: ${{ secrets.WORKFLOW_TOKEN }}
-#
-#      - name: Trigger Movies Demo build
-#        if: ${{ github.event_name == 'push' }}
-#        uses: benc-uk/workflow-dispatch@v1
-#        with:
-#          workflow: Build
-#          repo: toedter/movies-demo
-#          token: ${{ secrets.WORKFLOW_TOKEN }}
+          keep_files: true
