@@ -230,7 +230,7 @@ test.describe('HAL Explorer App', () => {
     await expect(modal).not.toHaveClass(/show/, { timeout: 5000 });
 
     // Verify the URL was updated with the title parameter (meaning the request was made)
-    await expect(page).toHaveURL(/title=myTitle/);
+    expect(await page.evaluate(() => sessionStorage.getItem('hash'))).toContain('title=myTitle');
   });
 
   test('should display correct properties HAL-FORMS POST request dialog', async ({ page }) => {
@@ -273,7 +273,9 @@ test.describe('HAL Explorer App', () => {
     await page.locator('button:has(i.bi-chevron-left)').first().click();
 
     // Wait for the browser URL to update
-    await expect(page).toHaveURL(/#uri=http:\/\/localhost:3000\/users\.hal\.json/);
+    expect(await page.evaluate(() => sessionStorage.getItem('hash'))).toContain(
+      'uri=http://localhost:3000/users.hal.json'
+    );
 
     // Wait for navigation to complete
     await page.waitForLoadState('networkidle');
