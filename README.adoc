@@ -12,8 +12,8 @@ HAL Explorer helps you explore http://stateless.co/hal_specification.html[HAL]- 
 == Reference Docs and Demos
 
 |===
-| Release | 2.2.1 | https://toedter.github.io/hal-explorer/release/reference-doc/[Reference Documentation] | https://toedter.github.io/hal-explorer/release/hal-explorer/#theme=Cosmo&uri=examples/examples.hal-forms.json[HAL Explorer Demo]
-| Snapshot | 2.2.2-SNAPSHOT | https://toedter.github.io/hal-explorer/snapshot/reference-doc/[Reference Documentation] | https://toedter.github.io/hal-explorer/snapshot/hal-explorer/#theme=Cosmo&uri=examples/examples.hal-forms.json[HAL Explorer Demo]
+| Release | 2.3.0 | https://toedter.github.io/hal-explorer/release/reference-doc/[Reference Documentation] | https://toedter.github.io/hal-explorer/release/hal-explorer/#theme=Cosmo&uri=examples/examples.hal-forms.json[HAL Explorer Demo]
+| Snapshot | 2.3.1-SNAPSHOT | https://toedter.github.io/hal-explorer/snapshot/reference-doc/[Reference Documentation] | https://toedter.github.io/hal-explorer/snapshot/hal-explorer/#theme=Cosmo&uri=examples/examples.hal-forms.json[HAL Explorer Demo]
 |===
 
 You can also try HAL Explorer online at https://hal-explorer.com.
@@ -51,23 +51,23 @@ Maven:
 <dependency>
     <groupId>org.webjars</groupId>
     <artifactId>hal-explorer</artifactId>
-    <version>2.2.1</version>
+    <version>2.3.0</version>
 </dependency>
 ----
 
 Gradle (Groovy):
 [source,groovy]
 ----
-runtimeOnly 'org.webjars:hal-explorer:2.2.1'
+runtimeOnly 'org.webjars:hal-explorer:2.3.0'
 ----
 
 Gradle (Kotlin):
 [source,kotlin]
 ----
-runtimeOnly("org.webjars:hal-explorer:2.2.1")
+runtimeOnly("org.webjars:hal-explorer:2.3.0")
 ----
 
-Access at: `/webjars/hal-explorer/2.2.1/index.html`
+Access at: `/webjars/hal-explorer/2.3.0/index.html`
 
 For Spring Data REST integration, see the https://toedter.github.io/hal-explorer/release/reference-doc/#setup[Setup Guide].
 
@@ -76,23 +76,23 @@ For Spring Data REST integration, see the https://toedter.github.io/hal-explorer
 **Dev Server:**
 [source,bash]
 ----
-yarn start
+pnpm start
 ----
 Navigate to http://localhost:4200/. The dev server proxies `/api` and `/docs` to `localhost:8080` (no CORS needed).
 
 **Build:**
 [source,bash]
 ----
-yarn build
+pnpm build
 ----
 Build artifacts are in `dist/` directory.
 
 **Tests:**
 [source,bash]
 ----
-yarn test           # unit tests
-yarn test:headless  # headless unit tests
-yarn e2e            # e2e tests (Playwright)
+pnpm test           # unit tests
+pnpm test:headless  # headless unit tests
+pnpm e2e            # e2e tests (Playwright)
 ----
 
 **Code Quality:**
