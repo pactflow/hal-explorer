@@ -42,7 +42,7 @@ export class AppService {
   constructor() {
     this.initializeFromLocalStorage();
     this.handleLocationHash();
-    globalThis.addEventListener('hashchange', () => this.handleLocationHash(), false);
+    window.addEventListener('storage', () => this.handleLocationHash(), false);
   }
 
   private initializeFromLocalStorage(): void {
@@ -157,7 +157,7 @@ export class AppService {
 
   private parseLocationHashParameters(): RequestHeader[] {
     const tempHeaders: RequestHeader[] = new Array(5);
-    const fragment = location.hash.substring(1);
+    const fragment = window.sessionStorage.getItem('hash') || '';
     const regex = /([^&=]+)=([^&]*)/g;
     let match = regex.exec(fragment);
 
@@ -212,6 +212,6 @@ export class AppService {
       params.push(`uri=${this.uriParam}`);
     }
 
-    globalThis.location.hash = params.join('&');
+    window.sessionStorage.setItem('hash', params.join('&'));
   }
 }
