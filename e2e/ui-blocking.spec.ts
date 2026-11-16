@@ -25,7 +25,11 @@ test.describe('UI Blocking During Requests', () => {
 
   test('should disable link buttons during request', async ({ page }) => {
     // Load initial resource
-    await page.goto('/#uri=http://localhost:3000/index.hal.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index.hal.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Verify links are visible and enabled
@@ -45,7 +49,11 @@ test.describe('UI Blocking During Requests', () => {
 
   test('should disable template buttons during request', async ({ page }) => {
     // Load resource with HAL-FORMS templates
-    await page.goto('/#uri=http://localhost:3000/movies.hal-forms.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/movies.hal-forms.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Wait for the HAL-FORMS section to be loaded
@@ -81,7 +89,11 @@ test.describe('UI Blocking During Requests', () => {
 
   test('should disable documentation buttons during request', async ({ page }) => {
     // Load resource with documentation links
-    await page.goto('/#uri=http://localhost:3000/index-with-doc-anchor.hal.json');
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/index-with-doc-anchor.hal.json');
+      window.dispatchEvent(new Event('storage'));
+    });
     await page.waitForLoadState('networkidle');
 
     // Check if documentation button exists and is enabled

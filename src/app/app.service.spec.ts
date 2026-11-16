@@ -5,7 +5,7 @@ describe('AppService', () => {
   let service: AppService;
 
   beforeEach(() => {
-    window.location.hash = '';
+    window.sessionStorage.setItem('hash', '');
     localStorage.clear();
     service = new AppService();
   });
@@ -95,8 +95,8 @@ describe('AppService', () => {
     expect(service.getCustomRequestHeaders()[0].value).toBe('application/json');
     expect(service.getCustomRequestHeaders()[1].key).toBe('authorization');
     expect(service.getCustomRequestHeaders()[1].value).toBe('bearer euztsfghfhgwztuzt');
-    expect(window.location.hash).toBe(
-      '#hkey0=accept&hval0=application/json&hkey1=authorization&hval1=bearer%20euztsfghfhgwztuzt'
+    expect(window.sessionStorage.getItem('hash')).toBe(
+      'hkey0=accept&hval0=application/json&hkey1=authorization&hval1=bearer euztsfghfhgwztuzt'
     );
   });
 
@@ -106,7 +106,7 @@ describe('AppService', () => {
     localStorage.setItem('hal-explorer.columnLayout', '3');
     localStorage.setItem('hal-explorer.httpOptions', 'true');
     localStorage.setItem('hal-explorer.allHttpMethodsForLinks', 'true');
-    window.location.hash = '#hkey0=accept&hval0=text/plain&uri=https://chatty42.herokuapp.com/api/users';
+    window.sessionStorage.setItem('hash', 'hkey0=accept&hval0=text/plain&uri=https://chatty42.herokuapp.com/api/users');
     service = new AppService();
 
     expect(service.getCustomRequestHeaders()[0].key).toBe('accept');
@@ -121,7 +121,7 @@ describe('AppService', () => {
   it('should parse window location hash with hval before hkey', () => {
     localStorage.setItem('hal-explorer.theme', 'Cosmo');
     localStorage.setItem('hal-explorer.columnLayout', '3');
-    window.location.hash = '#hval0=text/plain&hkey0=accept&uri=https://chatty42.herokuapp.com/api/users';
+    window.sessionStorage.setItem('hash', 'hval0=text/plain&hkey0=accept&uri=https://chatty42.herokuapp.com/api/users');
     service = new AppService();
 
     expect(service.getCustomRequestHeaders()[0].key).toBe('accept');
@@ -134,7 +134,7 @@ describe('AppService', () => {
   it('should parse window location hash with deprecated hkey "url"', () => {
     localStorage.setItem('hal-explorer.theme', 'Cosmo');
     localStorage.setItem('hal-explorer.columnLayout', '3');
-    window.location.hash = '#hval0=text/plain&hkey0=accept&url=https://chatty42.herokuapp.com/api/users';
+    window.sessionStorage.setItem('hash', 'hval0=text/plain&hkey0=accept&url=https://chatty42.herokuapp.com/api/users');
     service = new AppService();
 
     expect(service.getCustomRequestHeaders()[0].key).toBe('accept');
@@ -147,7 +147,10 @@ describe('AppService', () => {
   it('should parse window location hash with unknown hkeys', () => {
     localStorage.setItem('hal-explorer.theme', 'Cosmo');
     localStorage.setItem('hal-explorer.columnLayout', '3');
-    window.location.hash = '#xxx=7&hval0=text/plain&hkey0=accept&yyy=xxx&url=https://chatty42.herokuapp.com/api/users';
+    window.sessionStorage.setItem(
+      'hash',
+      'xxx=7&hval0=text/plain&hkey0=accept&yyy=xxx&url=https://chatty42.herokuapp.com/api/users'
+    );
     service = new AppService();
 
     expect(service.getCustomRequestHeaders()[0].key).toBe('accept');
@@ -175,20 +178,20 @@ describe('AppService', () => {
     });
 
     // Simulate first navigation via browser back button
-    window.location.hash = '#uri=https://example.com/api/first';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=https://example.com/api/first');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(service.getUri()).toBe('https://example.com/api/first');
     expect(emittedUri).toBe('https://example.com/api/first');
 
     // Simulate second navigation via browser forward button (should work, not skip)
-    window.location.hash = '#uri=https://example.com/api/second';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=https://example.com/api/second');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(service.getUri()).toBe('https://example.com/api/second');
     expect(emittedUri).toBe('https://example.com/api/second');
 
     // Simulate third navigation (should also work)
-    window.location.hash = '#uri=https://example.com/api/third';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=https://example.com/api/third');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(service.getUri()).toBe('https://example.com/api/third');
     expect(emittedUri).toBe('https://example.com/api/third');
   });
@@ -211,8 +214,8 @@ describe('AppService', () => {
     expect(service.getUri()).toBe('https://example.com/api/test');
 
     // But the next manual hash change should work
-    window.location.hash = '#uri=https://example.com/api/manual';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=https://example.com/api/manual');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(service.getUri()).toBe('https://example.com/api/manual');
     expect(emitCount).toBeGreaterThanOrEqual(1);
   });
@@ -224,8 +227,8 @@ describe('AppService', () => {
     });
 
     // Start with initial URL (browser navigation)
-    window.location.hash = '#uri=http://localhost:3000/examples.hal-forms.json';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/examples.hal-forms.json');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(service.getUri()).toBe('http://localhost:3000/examples.hal-forms.json');
     expect(emittedUris).toContain('http://localhost:3000/examples.hal-forms.json');
 
@@ -246,15 +249,15 @@ describe('AppService', () => {
     const emitCountBeforeBack = emittedUris.length;
 
     // First back button - browser changes hash, our code should react
-    window.location.hash = '#uri=http://localhost:3000/link1.json';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/link1.json');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(service.getUri()).toBe('http://localhost:3000/link1.json');
     expect(emittedUris[emittedUris.length - 1]).toBe('http://localhost:3000/link1.json');
     expect(emittedUris.length).toBe(emitCountBeforeBack + 1); // Should have emitted
 
     // Second back button - browser changes hash, our code should react
-    window.location.hash = '#uri=http://localhost:3000/examples.hal-forms.json';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/examples.hal-forms.json');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(service.getUri()).toBe('http://localhost:3000/examples.hal-forms.json');
     expect(emittedUris[emittedUris.length - 1]).toBe('http://localhost:3000/examples.hal-forms.json');
     expect(emittedUris.length).toBe(emitCountBeforeBack + 2); // Should have emitted again
@@ -273,8 +276,8 @@ describe('AppService', () => {
 
   it('should return true for isFromBrowserNavigation() after browser navigation', () => {
     // Simulate browser navigation via hash change
-    window.location.hash = '#uri=http://localhost:3000/test.json';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/test.json');
+    window.dispatchEvent(new HashChangeEvent('storage'));
 
     // Should return true because it was browser navigation
     expect(service.isFromBrowserNavigation()).toBe(true);
@@ -299,20 +302,20 @@ describe('AppService', () => {
     expect(navigationFlags[navigationFlags.length - 1]).toBe(false);
 
     // Browser back button (simulated)
-    window.location.hash = '#uri=http://localhost:3000/page1.json';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/page1.json');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(navigationFlags[navigationFlags.length - 1]).toBe(true);
 
     // Browser forward button (simulated)
-    window.location.hash = '#uri=http://localhost:3000/page2.json';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/page2.json');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(navigationFlags[navigationFlags.length - 1]).toBe(true);
   });
 
   it('should reset isFromBrowserNavigation flag after being checked', () => {
     // Set up browser navigation
-    window.location.hash = '#uri=http://localhost:3000/test.json';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/test.json');
+    window.dispatchEvent(new HashChangeEvent('storage'));
 
     // First check - should be true
     expect(service.isFromBrowserNavigation()).toBe(true);
@@ -326,8 +329,8 @@ describe('AppService', () => {
 
   it('should handle multiple browser navigations correctly', () => {
     // First browser navigation
-    window.location.hash = '#uri=http://localhost:3000/page1.json';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/page1.json');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(service.isFromBrowserNavigation()).toBe(true);
     expect(service.isFromBrowserNavigation()).toBe(false); // Reset
 
@@ -336,8 +339,8 @@ describe('AppService', () => {
     expect(service.isFromBrowserNavigation()).toBe(false);
 
     // Second browser navigation
-    window.location.hash = '#uri=http://localhost:3000/page3.json';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.sessionStorage.setItem('hash', 'uri=http://localhost:3000/page3.json');
+    window.dispatchEvent(new HashChangeEvent('storage'));
     expect(service.isFromBrowserNavigation()).toBe(true);
     expect(service.isFromBrowserNavigation()).toBe(false); // Reset
   });
